@@ -22,3 +22,14 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+.idea
+*.target
+/booking-manager/target/
+/fulfillment-service/target/
+/integration-tests/target/
+/integration-tests/target/
+/payment-service/target/
+/search-service/target/
+/user-service/target/
+/.claude/

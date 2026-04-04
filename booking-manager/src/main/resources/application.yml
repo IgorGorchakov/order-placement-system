@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: booking-manager
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ebus_booking
+    username: postgres
+    password: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/ebus_booking
+
+    redis:
+      host: localhost
+      port: 6379
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: booking-manager
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+server:
+  port: 8083
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+  datasource:
+    url: jdbc:postgresql://postgres:5432/ebus_booking
+  data:
+    mongodb:
+      uri: mongodb://mongodb:27017/ebus_booking
+    redis:
+      host: redis
+  kafka:
+    bootstrap-servers: kafka:29092

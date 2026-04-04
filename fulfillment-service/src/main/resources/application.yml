@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: fulfillment-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ebus_fulfillment
+    username: postgres
+    password: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: fulfillment-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+app:
+  user-service-url: http://localhost:8081
+  booking-service-url: http://localhost:8083
+
+server:
+  port: 8085
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+  datasource:
+    url: jdbc:postgresql://postgres:5432/ebus_fulfillment
+  kafka:
+    consumer:
+      bootstrap-servers: kafka:29092
+
+app:
+  user-service-url: http://user-service:8081
+  booking-service-url: http://booking-manager:8083
