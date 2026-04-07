@@ -57,11 +57,13 @@ class UserServiceTest {
 
     @Test
     void createUser_Success() {
-        CreateUserRequest request = new CreateUserRequest();
-        request.setEmail("newuser@example.com");
-        request.setPassword("newpass123");
-        request.setFirstName("Jane");
-        request.setLastName("Smith");
+        CreateUserRequest request = new CreateUserRequest(
+                "newuser@example.com",
+                "newpass123",
+                "Jane",
+                "Smith",
+                null
+        );
 
         UserEntity newUser = UserEntity.builder()
                 .id(2L)
@@ -84,9 +86,13 @@ class UserServiceTest {
 
     @Test
     void createUser_EmailAlreadyExists() {
-        CreateUserRequest request = new CreateUserRequest();
-        request.setEmail("existing@example.com");
-        request.setPassword("password123");
+        CreateUserRequest request = new CreateUserRequest(
+                "existing@example.com",
+                "password123",
+                null,
+                null,
+                null
+        );
 
         when(userDao.existsByEmail("existing@example.com")).thenReturn(true);
 
@@ -99,9 +105,10 @@ class UserServiceTest {
 
     @Test
     void authenticate_Success() {
-        LoginRequest request = new LoginRequest();
-        request.setEmail("test@example.com");
-        request.setPassword("password123");
+        LoginRequest request = new LoginRequest(
+                "test@example.com",
+                "password123"
+        );
 
         when(userDao.findByEmail("test@example.com")).thenReturn(Optional.of(sampleUser));
 
@@ -114,9 +121,10 @@ class UserServiceTest {
 
     @Test
     void authenticate_UserNotFound() {
-        LoginRequest request = new LoginRequest();
-        request.setEmail("nonexistent@example.com");
-        request.setPassword("password123");
+        LoginRequest request = new LoginRequest(
+                "nonexistent@example.com",
+                "password123"
+        );
 
         when(userDao.findByEmail("nonexistent@example.com")).thenReturn(Optional.empty());
 
@@ -126,9 +134,10 @@ class UserServiceTest {
 
     @Test
     void authenticate_InvalidPassword() {
-        LoginRequest request = new LoginRequest();
-        request.setEmail("test@example.com");
-        request.setPassword("wrongpassword");
+        LoginRequest request = new LoginRequest(
+                "test@example.com",
+                "wrongpassword"
+        );
 
         when(userDao.findByEmail("test@example.com")).thenReturn(Optional.of(sampleUser));
 
@@ -176,11 +185,12 @@ class UserServiceTest {
 
     @Test
     void addPaymentMethod_Success() {
-        PaymentMethodRequest request = new PaymentMethodRequest();
-        request.setType(PaymentMethodType.CARD);
-        request.setProvider("Stripe");
-        request.setToken("tok_123");
-        request.setDefaultMethod(true);
+        PaymentMethodRequest request = new PaymentMethodRequest(
+                PaymentMethodType.CARD,
+                "Stripe",
+                "tok_123",
+                true
+        );
 
         PaymentMethodEntity pm = PaymentMethodEntity.builder()
                 .id(1L)
@@ -204,10 +214,12 @@ class UserServiceTest {
 
     @Test
     void addPaymentMethod_UserNotFound() {
-        PaymentMethodRequest request = new PaymentMethodRequest();
-        request.setType(PaymentMethodType.CARD);
-        request.setProvider("Stripe");
-        request.setToken("tok_123");
+        PaymentMethodRequest request = new PaymentMethodRequest(
+                PaymentMethodType.CARD,
+                "Stripe",
+                "tok_123",
+                false
+        );
 
         when(userDao.findById(99L)).thenReturn(Optional.empty());
 

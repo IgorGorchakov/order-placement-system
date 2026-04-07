@@ -60,10 +60,17 @@ class SearchServiceTest {
                 .availableSeats(30)
                 .build();
 
-        searchRequest = new TripSearchRequest();
-        searchRequest.setOrigin("NYC");
-        searchRequest.setDestination("Boston");
-        searchRequest.setDate(LocalDate.of(2026, 4, 10));
+        searchRequest = new TripSearchRequest(
+                "NYC",
+                "Boston",
+                LocalDate.of(2026, 4, 10),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
     }
 
     @Test
@@ -99,8 +106,17 @@ class SearchServiceTest {
 
     @Test
     void searchTrips_WithPriceRange() {
-        searchRequest.setMinPrice(BigDecimal.valueOf(30));
-        searchRequest.setMaxPrice(BigDecimal.valueOf(70));
+        searchRequest = new TripSearchRequest(
+                searchRequest.origin(),
+                searchRequest.destination(),
+                searchRequest.date(),
+                BigDecimal.valueOf(30),
+                BigDecimal.valueOf(70),
+                searchRequest.amenities(),
+                searchRequest.operator(),
+                searchRequest.departureAfter(),
+                searchRequest.departureBefore()
+        );
 
         SearchHits<TripDocument> searchHits = mock(SearchHits.class);
         when(searchHits.getSearchHits()).thenReturn(List.of());
@@ -115,7 +131,17 @@ class SearchServiceTest {
 
     @Test
     void searchTrips_WithAmenities() {
-        searchRequest.setAmenities(List.of("WiFi", "AC"));
+        searchRequest = new TripSearchRequest(
+                searchRequest.origin(),
+                searchRequest.destination(),
+                searchRequest.date(),
+                searchRequest.minPrice(),
+                searchRequest.maxPrice(),
+                List.of("WiFi", "AC"),
+                searchRequest.operator(),
+                searchRequest.departureAfter(),
+                searchRequest.departureBefore()
+        );
 
         SearchHits<TripDocument> searchHits = mock(SearchHits.class);
         when(searchHits.getSearchHits()).thenReturn(List.of());

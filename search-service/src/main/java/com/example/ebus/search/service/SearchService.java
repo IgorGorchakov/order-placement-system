@@ -27,47 +27,47 @@ public class SearchService {
     public List<TripSearchResponse> searchTrips(TripSearchRequest request) {
         BoolQuery.Builder bool = new BoolQuery.Builder();
 
-        if (request.getOrigin() != null) {
-            bool.must(Query.of(q -> q.match(m -> m.field("origin").query(request.getOrigin()))));
+        if (request.origin() != null) {
+            bool.must(Query.of(q -> q.match(m -> m.field("origin").query(request.origin()))));
         }
-        if (request.getDestination() != null) {
-            bool.must(Query.of(q -> q.match(m -> m.field("destination").query(request.getDestination()))));
+        if (request.destination() != null) {
+            bool.must(Query.of(q -> q.match(m -> m.field("destination").query(request.destination()))));
         }
-        if (request.getOperator() != null) {
-            bool.must(Query.of(q -> q.match(m -> m.field("operatorName").query(request.getOperator()))));
+        if (request.operator() != null) {
+            bool.must(Query.of(q -> q.match(m -> m.field("operatorName").query(request.operator()))));
         }
-        if (request.getAmenities() != null && !request.getAmenities().isEmpty()) {
-            for (String amenity : request.getAmenities()) {
+        if (request.amenities() != null && !request.amenities().isEmpty()) {
+            for (String amenity : request.amenities()) {
                 bool.must(Query.of(q -> q.term(t -> t.field("amenities").value(amenity))));
             }
         }
-        if (request.getMinPrice() != null || request.getMaxPrice() != null) {
+        if (request.minPrice() != null || request.maxPrice() != null) {
             bool.must(Query.of(q -> q.range(r -> {
                 var range = r.number(n -> {
                     var nr = n.field("price");
-                    if (request.getMinPrice() != null) nr.gte(request.getMinPrice().doubleValue());
-                    if (request.getMaxPrice() != null) nr.lte(request.getMaxPrice().doubleValue());
+                    if (request.minPrice() != null) nr.gte(request.minPrice().doubleValue());
+                    if (request.maxPrice() != null) nr.lte(request.maxPrice().doubleValue());
                     return nr;
                 });
                 return range;
             })));
         }
-        if (request.getDate() != null) {
-            LocalDateTime dayStart = request.getDate().atStartOfDay();
-            LocalDateTime dayEnd = request.getDate().atTime(LocalTime.MAX);
+        if (request.date() != null) {
+            LocalDateTime dayStart = request.date().atStartOfDay();
+            LocalDateTime dayEnd = request.date().atTime(LocalTime.MAX);
             bool.must(Query.of(q -> q.range(r -> r.date(d -> d
                     .field("departureTime")
                     .gte(dayStart.toString())
                     .lte(dayEnd.toString())))));
         }
-        if (request.getDepartureAfter() != null && request.getDate() != null) {
-            LocalDateTime after = request.getDate().atTime(request.getDepartureAfter());
+        if (request.departureAfter() != null && request.date() != null) {
+            LocalDateTime after = request.date().atTime(request.departureAfter());
             bool.must(Query.of(q -> q.range(r -> r.date(d -> d
                     .field("departureTime")
                     .gte(after.toString())))));
         }
-        if (request.getDepartureBefore() != null && request.getDate() != null) {
-            LocalDateTime before = request.getDate().atTime(request.getDepartureBefore());
+        if (request.departureBefore() != null && request.date() != null) {
+            LocalDateTime before = request.date().atTime(request.departureBefore());
             bool.must(Query.of(q -> q.range(r -> r.date(d -> d
                     .field("departureTime")
                     .lte(before.toString())))));

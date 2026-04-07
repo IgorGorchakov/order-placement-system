@@ -29,9 +29,17 @@ class SearchControllerTest {
 
     @Test
     void searchTrips_Success() {
-        TripSearchRequest request = new TripSearchRequest();
-        request.setOrigin("NYC");
-        request.setDestination("Boston");
+        TripSearchRequest request = new TripSearchRequest(
+                "NYC",
+                "Boston",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
 
         TripSearchResponse response = TripSearchResponse.builder()
                 .id("trip-1")

@@ -1,9 +1,17 @@
 package com.example.ebus.booking.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "buses")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class BusEntity {
 
     @Id
@@ -18,13 +26,4 @@ public class BusEntity {
 
     @Column(nullable = false)
     private int totalSeats;
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getPlateNumber() { return plateNumber; }
-    public void setPlateNumber(String plateNumber) { this.plateNumber = plateNumber; }
-    public String getOperatorName() { return operatorName; }
-    public void setOperatorName(String operatorName) { this.operatorName = operatorName; }
-    public int getTotalSeats() { return totalSeats; }
-    public void setTotalSeats(int totalSeats) { this.totalSeats = totalSeats; }
 }

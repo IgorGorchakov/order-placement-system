@@ -25,26 +25,26 @@ public class UserService {
 
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {
-        if (userDao.existsByEmail(request.getEmail())) {
-            throw new EmailAlreadyExistsException(request.getEmail());
+        if (userDao.existsByEmail(request.email())) {
+            throw new EmailAlreadyExistsException(request.email());
         }
 
         UserEntity user = UserEntity.builder()
-                .email(request.getEmail())
-                .passwordHash(passwordEncoder.encode(request.getPassword()))
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
-                .phone(request.getPhone())
+                .email(request.email())
+                .passwordHash(passwordEncoder.encode(request.password()))
+                .firstName(request.firstName())
+                .lastName(request.lastName())
+                .phone(request.phone())
                 .build();
 
         return toResponse(userDao.save(user));
     }
 
     public UserResponse authenticate(LoginRequest request) {
-        UserEntity user = userDao.findByEmail(request.getEmail())
+        UserEntity user = userDao.findByEmail(request.email())
                 .orElseThrow(AuthenticationException::new);
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             throw new AuthenticationException();
         }
 
@@ -66,10 +66,10 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
         PaymentMethodEntity pm = PaymentMethodEntity.builder()
-                .type(request.getType())
-                .provider(request.getProvider())
-                .token(request.getToken())
-                .defaultMethod(request.isDefaultMethod())
+                .type(request.type())
+                .provider(request.provider())
+                .token(request.token())
+                .defaultMethod(request.defaultMethod())
                 .user(user)
                 .build();
 

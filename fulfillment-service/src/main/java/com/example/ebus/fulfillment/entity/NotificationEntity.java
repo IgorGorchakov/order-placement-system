@@ -1,10 +1,19 @@
 package com.example.ebus.fulfillment.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "notifications")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class NotificationEntity {
 
     @Id
@@ -36,20 +45,4 @@ public class NotificationEntity {
     protected void onCreate() {
         sentAt = LocalDateTime.now();
     }
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
-    public Long getBookingId() { return bookingId; }
-    public void setBookingId(Long bookingId) { this.bookingId = bookingId; }
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
-    public String getChannel() { return channel; }
-    public void setChannel(String channel) { this.channel = channel; }
-    public String getRecipient() { return recipient; }
-    public void setRecipient(String recipient) { this.recipient = recipient; }
-    public String getMessage() { return message; }
-    public void setMessage(String message) { this.message = message; }
-    public LocalDateTime getSentAt() { return sentAt; }
 }

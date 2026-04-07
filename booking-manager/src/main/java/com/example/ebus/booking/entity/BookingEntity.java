@@ -1,11 +1,20 @@
 package com.example.ebus.booking.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "bookings")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class BookingEntity {
 
     @Id
@@ -46,21 +55,4 @@ public class BookingEntity {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
-    public Long getTripId() { return tripId; }
-    public void setTripId(Long tripId) { this.tripId = tripId; }
-    public BookingStatus getStatus() { return status; }
-    public void setStatus(BookingStatus status) { this.status = status; }
-    public String getSeatNumbers() { return seatNumbers; }
-    public void setSeatNumbers(String seatNumbers) { this.seatNumbers = seatNumbers; }
-    public BigDecimal getTotalPrice() { return totalPrice; }
-    public void setTotalPrice(BigDecimal totalPrice) { this.totalPrice = totalPrice; }
-    public String getCurrency() { return currency; }
-    public void setCurrency(String currency) { this.currency = currency; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
 }

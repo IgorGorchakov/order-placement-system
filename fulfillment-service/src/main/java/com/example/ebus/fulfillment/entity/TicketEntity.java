@@ -1,10 +1,19 @@
 package com.example.ebus.fulfillment.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tickets")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class TicketEntity {
 
     @Id
@@ -36,20 +45,4 @@ public class TicketEntity {
     protected void onCreate() {
         issuedAt = LocalDateTime.now();
     }
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public Long getBookingId() { return bookingId; }
-    public void setBookingId(Long bookingId) { this.bookingId = bookingId; }
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
-    public Long getTripId() { return tripId; }
-    public void setTripId(Long tripId) { this.tripId = tripId; }
-    public String getTicketCode() { return ticketCode; }
-    public void setTicketCode(String ticketCode) { this.ticketCode = ticketCode; }
-    public TicketStatus getStatus() { return status; }
-    public void setStatus(TicketStatus status) { this.status = status; }
-    public LocalDateTime getIssuedAt() { return issuedAt; }
-    public LocalDateTime getCancelledAt() { return cancelledAt; }
-    public void setCancelledAt(LocalDateTime cancelledAt) { this.cancelledAt = cancelledAt; }
 }

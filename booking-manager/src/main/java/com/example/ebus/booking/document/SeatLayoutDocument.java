@@ -1,10 +1,21 @@
 package com.example.ebus.booking.document;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.util.Map;
 
 @Document(collection = "seat_layouts")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class SeatLayoutDocument {
 
     @Id
@@ -17,15 +28,4 @@ public class SeatLayoutDocument {
     private int seatsPerRow;
 
     private Map<String, String> seatMap;
-
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
-    public Long getBusId() { return busId; }
-    public void setBusId(Long busId) { this.busId = busId; }
-    public int getRows() { return rows; }
-    public void setRows(int rows) { this.rows = rows; }
-    public int getSeatsPerRow() { return seatsPerRow; }
-    public void setSeatsPerRow(int seatsPerRow) { this.seatsPerRow = seatsPerRow; }
-    public Map<String, String> getSeatMap() { return seatMap; }
-    public void setSeatMap(Map<String, String> seatMap) { this.seatMap = seatMap; }
 }

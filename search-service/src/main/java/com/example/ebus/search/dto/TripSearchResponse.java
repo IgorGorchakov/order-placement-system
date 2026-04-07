@@ -1,14 +1,18 @@
 package com.example.ebus.search.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Data
+@Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class TripSearchResponse {
     private String id;
     private String origin;
