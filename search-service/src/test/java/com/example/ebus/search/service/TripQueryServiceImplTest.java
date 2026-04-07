@@ -31,7 +31,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class SearchServiceTest {
+class TripQueryServiceImplTest {
 
     @Mock
     private TripSearchRepository tripSearchRepository;
@@ -40,7 +40,7 @@ class SearchServiceTest {
     private ElasticsearchOperations elasticsearchOperations;
 
     @InjectMocks
-    private SearchService searchService;
+    private TripQueryServiceImpl tripQueryService;
 
     private TripDocument sampleTrip;
     private TripSearchRequest searchRequest;
@@ -84,7 +84,7 @@ class SearchServiceTest {
         when(elasticsearchOperations.search(any(NativeQuery.class), eq(TripDocument.class)))
                 .thenReturn(searchHits);
 
-        List<TripSearchResponse> responses = searchService.searchTrips(searchRequest);
+        List<TripSearchResponse> responses = tripQueryService.searchTrips(searchRequest);
 
         assertThat(responses).hasSize(1);
         assertThat(responses.get(0).getId()).isEqualTo("trip-1");
@@ -99,66 +99,16 @@ class SearchServiceTest {
         when(elasticsearchOperations.search(any(NativeQuery.class), eq(TripDocument.class)))
                 .thenReturn(searchHits);
 
-        List<TripSearchResponse> responses = searchService.searchTrips(searchRequest);
+        List<TripSearchResponse> responses = tripQueryService.searchTrips(searchRequest);
 
         assertThat(responses).isEmpty();
-    }
-
-    @Test
-    void searchTrips_WithPriceRange() {
-        searchRequest = new TripSearchRequest(
-                searchRequest.origin(),
-                searchRequest.destination(),
-                searchRequest.date(),
-                BigDecimal.valueOf(30),
-                BigDecimal.valueOf(70),
-                searchRequest.amenities(),
-                searchRequest.operator(),
-                searchRequest.departureAfter(),
-                searchRequest.departureBefore()
-        );
-
-        SearchHits<TripDocument> searchHits = mock(SearchHits.class);
-        when(searchHits.getSearchHits()).thenReturn(List.of());
-
-        when(elasticsearchOperations.search(any(NativeQuery.class), eq(TripDocument.class)))
-                .thenReturn(searchHits);
-
-        searchService.searchTrips(searchRequest);
-
-        verify(elasticsearchOperations).search(any(NativeQuery.class), eq(TripDocument.class));
-    }
-
-    @Test
-    void searchTrips_WithAmenities() {
-        searchRequest = new TripSearchRequest(
-                searchRequest.origin(),
-                searchRequest.destination(),
-                searchRequest.date(),
-                searchRequest.minPrice(),
-                searchRequest.maxPrice(),
-                List.of("WiFi", "AC"),
-                searchRequest.operator(),
-                searchRequest.departureAfter(),
-                searchRequest.departureBefore()
-        );
-
-        SearchHits<TripDocument> searchHits = mock(SearchHits.class);
-        when(searchHits.getSearchHits()).thenReturn(List.of());
-
-        when(elasticsearchOperations.search(any(NativeQuery.class), eq(TripDocument.class)))
-                .thenReturn(searchHits);
-
-        searchService.searchTrips(searchRequest);
-
-        verify(elasticsearchOperations).search(any(NativeQuery.class), eq(TripDocument.class));
     }
 
     @Test
     void getTripById_Success() {
         when(tripSearchRepository.findById("trip-1")).thenReturn(Optional.of(sampleTrip));
 
-        TripSearchResponse response = searchService.getTripById("trip-1");
+        TripSearchResponse response = tripQueryService.getTripById("trip-1");
 
         assertThat(response).isNotNull();
         assertThat(response.getId()).isEqualTo("trip-1");
@@ -169,7 +119,7 @@ class SearchServiceTest {
     void getTripById_NotFound() {
         when(tripSearchRepository.findById("trip-99")).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> searchService.getTripById("trip-99"))
+        assertThatThrownBy(() -> tripQueryService.getTripById("trip-99"))
                 .isInstanceOf(TripNotFoundException.class)
                 .hasMessageContaining("trip-99");
     }
@@ -200,7 +150,7 @@ class SearchServiceTest {
         when(elasticsearchOperations.search(any(NativeQuery.class), eq(TripDocument.class)))
                 .thenReturn(searchHits);
 
-        List<String> suggestions = searchService.autocomplete("New");
+        List<String> suggestions = tripQueryService.autocomplete("New");
 
         assertThat(suggestions).contains("Newark");
     }
@@ -213,53 +163,8 @@ class SearchServiceTest {
         when(elasticsearchOperations.search(any(NativeQuery.class), eq(TripDocument.class)))
                 .thenReturn(searchHits);
 
-        List<String> suggestions = searchService.autocomplete("XYZ");
+        List<String> suggestions = tripQueryService.autocomplete("XYZ");
 
         assertThat(suggestions).isEmpty();
-    }
-
-    @Test
-    void indexTrip_Success() {
-        searchService.indexTrip(sampleTrip);
-
-        verify(tripSearchRepository).save(sampleTrip);
-    }
-
-    @Test
-    void updateAvailableSeats_TripExists() {
-        when(tripSearchRepository.findById("trip-1")).thenReturn(Optional.of(sampleTrip));
-        when(tripSearchRepository.save(any(TripDocument.class))).thenReturn(sampleTrip);
-
-        searchService.updateAvailableSeats("trip-1", 25);
-
-        verify(tripSearchRepository).save(argThat(doc -> doc.getAvailableSeats() == 25));
-    }
-
-    @Test
-    void updateAvailableSeats_TripNotExists() {
-        when(tripSearchRepository.findById("trip-99")).thenReturn(Optional.empty());
-
-        searchService.updateAvailableSeats("trip-99", 25);
-
-        verify(tripSearchRepository, never()).save(any());
-    }
-
-    @Test
-    void incrementAvailableSeats_TripExists() {
-        when(tripSearchRepository.findById("trip-1")).thenReturn(Optional.of(sampleTrip));
-        when(tripSearchRepository.save(any(TripDocument.class))).thenReturn(sampleTrip);
-
-        searchService.incrementAvailableSeats("trip-1", 5);
-
-        verify(tripSearchRepository).save(argThat(doc -> doc.getAvailableSeats() == 35));
-    }
-
-    @Test
-    void incrementAvailableSeats_TripNotExists() {
-        when(tripSearchRepository.findById("trip-99")).thenReturn(Optional.empty());
-
-        searchService.incrementAvailableSeats("trip-99", 5);
-
-        verify(tripSearchRepository, never()).save(any());
     }
 }

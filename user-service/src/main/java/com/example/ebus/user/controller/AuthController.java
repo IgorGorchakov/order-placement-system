@@ -2,7 +2,7 @@ package com.example.ebus.user.controller;
 
 import com.example.ebus.user.dto.LoginRequest;
 import com.example.ebus.user.dto.UserResponse;
-import com.example.ebus.user.service.UserService;
+import com.example.ebus.user.service.AuthenticationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -12,10 +12,10 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final UserService userService;
+    private final AuthenticationService authenticationService;
 
     @PostMapping("/login")
     public UserResponse login(@Valid @RequestBody LoginRequest request) {
-        return userService.authenticate(request);
+        return authenticationService.authenticate(request);
     }
 }

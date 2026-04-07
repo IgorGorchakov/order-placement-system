@@ -2,7 +2,7 @@ package com.example.ebus.payment.controller;
 
 import com.example.ebus.payment.dto.PaymentResponse;
 import com.example.ebus.payment.exception.PaymentNotFoundException;
-import com.example.ebus.payment.service.PaymentService;
+import com.example.ebus.payment.service.PaymentQueryService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 class PaymentControllerTest {
 
     @Mock
-    private PaymentService paymentService;
+    private PaymentQueryService paymentQueryService;
 
     @InjectMocks
     private PaymentController paymentController;
@@ -32,7 +32,7 @@ class PaymentControllerTest {
                 1L, 1L, 100L, BigDecimal.valueOf(200), "USD",
                 "CREDIT_CARD", "Stripe", "COMPLETED", null, LocalDateTime.now());
 
-        when(paymentService.getPayment(1L)).thenReturn(response);
+        when(paymentQueryService.getPayment(1L)).thenReturn(response);
 
         PaymentResponse result = paymentController.getPayment(1L);
 
@@ -43,7 +43,7 @@ class PaymentControllerTest {
 
     @Test
     void getPayment_NotFound() {
-        when(paymentService.getPayment(1L)).thenThrow(new PaymentNotFoundException(1L));
+        when(paymentQueryService.getPayment(1L)).thenThrow(new PaymentNotFoundException(1L));
 
         assertThatThrownBy(() -> paymentController.getPayment(1L))
                 .isInstanceOf(PaymentNotFoundException.class);
@@ -55,7 +55,7 @@ class PaymentControllerTest {
                 1L, 1L, 100L, BigDecimal.valueOf(200), "USD",
                 "CREDIT_CARD", "Stripe", "COMPLETED", null, LocalDateTime.now());
 
-        when(paymentService.getPaymentByBookingId(1L)).thenReturn(response);
+        when(paymentQueryService.getPaymentByBookingId(1L)).thenReturn(response);
 
         PaymentResponse result = paymentController.getPaymentByBookingId(1L);
 
@@ -65,7 +65,7 @@ class PaymentControllerTest {
 
     @Test
     void getPaymentByBookingId_NotFound() {
-        when(paymentService.getPaymentByBookingId(1L)).thenThrow(new PaymentNotFoundException(1L));
+        when(paymentQueryService.getPaymentByBookingId(1L)).thenThrow(new PaymentNotFoundException(1L));
 
         assertThatThrownBy(() -> paymentController.getPaymentByBookingId(1L))
                 .isInstanceOf(PaymentNotFoundException.class);
@@ -77,7 +77,7 @@ class PaymentControllerTest {
                 1L, 1L, 100L, BigDecimal.valueOf(200), "USD",
                 "CREDIT_CARD", "Stripe", "COMPLETED", null, LocalDateTime.now());
 
-        when(paymentService.getPaymentsByUserId(100L)).thenReturn(List.of(response));
+        when(paymentQueryService.getPaymentsByUserId(100L)).thenReturn(List.of(response));
 
         List<PaymentResponse> responses = paymentController.getPaymentsByUserId(100L);
 
@@ -87,7 +87,7 @@ class PaymentControllerTest {
 
     @Test
     void getPaymentsByUserId_EmptyList() {
-        when(paymentService.getPaymentsByUserId(100L)).thenReturn(List.of());
+        when(paymentQueryService.getPaymentsByUserId(100L)).thenReturn(List.of());
 
         List<PaymentResponse> responses = paymentController.getPaymentsByUserId(100L);
 

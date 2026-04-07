@@ -1,7 +1,7 @@
 package com.example.ebus.payment.controller;
 
 import com.example.ebus.payment.dto.PaymentResponse;
-import com.example.ebus.payment.service.PaymentService;
+import com.example.ebus.payment.service.PaymentQueryService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,24 +10,24 @@ import java.util.List;
 @RequestMapping("/api/payments")
 public class PaymentController {
 
-    private final PaymentService paymentService;
+    private final PaymentQueryService paymentQueryService;
 
-    public PaymentController(PaymentService paymentService) {
-        this.paymentService = paymentService;
+    public PaymentController(PaymentQueryService paymentQueryService) {
+        this.paymentQueryService = paymentQueryService;
     }
 
     @GetMapping("/{id}")
     public PaymentResponse getPayment(@PathVariable Long id) {
-        return paymentService.getPayment(id);
+        return paymentQueryService.getPayment(id);
     }
 
     @GetMapping("/booking/{bookingId}")
     public PaymentResponse getPaymentByBookingId(@PathVariable Long bookingId) {
-        return paymentService.getPaymentByBookingId(bookingId);
+        return paymentQueryService.getPaymentByBookingId(bookingId);
     }
 
     @GetMapping("/user/{userId}")
     public List<PaymentResponse> getPaymentsByUserId(@PathVariable Long userId) {
-        return paymentService.getPaymentsByUserId(userId);
+        return paymentQueryService.getPaymentsByUserId(userId);
     }
 }

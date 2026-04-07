@@ -1,7 +1,7 @@
 package com.example.ebus.search.kafka;
 
 import com.example.ebus.search.document.TripDocument;
-import com.example.ebus.search.service.SearchService;
+import com.example.ebus.search.service.TripIndexingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +20,7 @@ import static org.mockito.Mockito.*;
 class TripEventConsumerTest {
 
     @Mock
-    private SearchService searchService;
+    private TripIndexingService tripIndexingService;
 
     @InjectMocks
     private TripEventConsumer tripEventConsumer;
@@ -46,7 +46,7 @@ class TripEventConsumerTest {
     void onTripCreated_Success() {
         tripEventConsumer.onTripCreated(sampleTrip);
 
-        verify(searchService).indexTrip(sampleTrip);
+        verify(tripIndexingService).indexTrip(sampleTrip);
     }
 
     @Test
@@ -58,7 +58,7 @@ class TripEventConsumerTest {
 
         tripEventConsumer.onSeatAvailabilityUpdated(event);
 
-        verify(searchService).updateAvailableSeats("trip-1", 25);
+        verify(tripIndexingService).updateAvailableSeats("trip-1", 25);
     }
 
     @Test
@@ -70,7 +70,7 @@ class TripEventConsumerTest {
 
         tripEventConsumer.onBookingCancelled(event);
 
-        verify(searchService).incrementAvailableSeats("trip-1", 3);
+        verify(tripIndexingService).incrementAvailableSeats("trip-1", 3);
     }
 
     @Test
@@ -79,6 +79,6 @@ class TripEventConsumerTest {
 
         tripEventConsumer.onBookingCancelled(event);
 
-        verify(searchService).incrementAvailableSeats("trip-1", 1);
+        verify(tripIndexingService).incrementAvailableSeats("trip-1", 1);
     }
 }

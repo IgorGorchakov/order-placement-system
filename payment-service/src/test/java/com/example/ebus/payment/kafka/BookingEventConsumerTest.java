@@ -1,7 +1,7 @@
 package com.example.ebus.payment.kafka;
 
 import com.example.ebus.events.booking.BookingCreatedEvent;
-import com.example.ebus.payment.service.PaymentService;
+import com.example.ebus.payment.service.PaymentProcessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 class BookingEventConsumerTest {
 
     @Mock
-    private PaymentService paymentService;
+    private PaymentProcessor paymentProcessor;
 
     @Mock
     private ObjectMapper objectMapper;
@@ -45,7 +45,7 @@ class BookingEventConsumerTest {
 
         bookingEventConsumer.handleBookingCreated(message);
 
-        verify(paymentService).processBookingCreated(sampleEvent);
+        verify(paymentProcessor).processBookingCreated(sampleEvent);
     }
 
     @Test
@@ -57,7 +57,7 @@ class BookingEventConsumerTest {
         // Should not throw exception - it's caught and logged
         bookingEventConsumer.handleBookingCreated(message);
 
-        // Verify paymentService was NOT called since parsing failed
-        verify(paymentService, never()).processBookingCreated(any(BookingCreatedEvent.class));
+        // Verify paymentProcessor was NOT called since parsing failed
+        verify(paymentProcessor, never()).processBookingCreated(any(BookingCreatedEvent.class));
     }
 }

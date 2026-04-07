@@ -19,11 +19,12 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class SearchService {
+public class TripQueryServiceImpl implements TripQueryService {
 
     private final TripSearchRepository tripSearchRepository;
     private final ElasticsearchOperations elasticsearchOperations;
 
+    @Override
     public List<TripSearchResponse> searchTrips(TripSearchRequest request) {
         BoolQuery.Builder bool = new BoolQuery.Builder();
 
@@ -83,12 +84,14 @@ public class SearchService {
                 .toList();
     }
 
+    @Override
     public TripSearchResponse getTripById(String id) {
         return tripSearchRepository.findById(id)
                 .map(this::toResponse)
                 .orElseThrow(() -> new TripNotFoundException(id));
     }
 
+    @Override
     public List<String> autocomplete(String query) {
         NativeQuery nativeQuery = NativeQuery.builder()
                 .withQuery(Query.of(q -> q.bool(b -> b
@@ -106,24 +109,6 @@ public class SearchService {
                 .distinct()
                 .sorted()
                 .toList();
-    }
-
-    public void indexTrip(TripDocument document) {
-        tripSearchRepository.save(document);
-    }
-
-    public void updateAvailableSeats(String tripId, int availableSeats) {
-        tripSearchRepository.findById(tripId).ifPresent(doc -> {
-            doc.setAvailableSeats(availableSeats);
-            tripSearchRepository.save(doc);
-        });
-    }
-
-    public void incrementAvailableSeats(String tripId, int count) {
-        tripSearchRepository.findById(tripId).ifPresent(doc -> {
-            doc.setAvailableSeats(doc.getAvailableSeats() + count);
-            tripSearchRepository.save(doc);
-        });
     }
 
     private TripSearchResponse toResponse(TripDocument doc) {

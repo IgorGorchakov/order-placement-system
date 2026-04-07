@@ -1,0 +1,43 @@
+package com.example.ebus.payment.service;
+
+import com.example.ebus.payment.dao.PaymentDao;
+import com.example.ebus.payment.dto.PaymentResponse;
+import com.example.ebus.payment.entity.PaymentEntity;
+import com.example.ebus.payment.exception.PaymentNotFoundException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class PaymentQueryServiceImpl implements PaymentQueryService {
+
+    private final PaymentDao paymentDao;
+
+    @Override
+    public PaymentResponse getPayment(Long id) {
+        return toResponse(paymentDao.findById(id)
+                .orElseThrow(() -> new PaymentNotFoundException(id)));
+    }
+
+    @Override
+    public PaymentResponse getPaymentByBookingId(Long bookingId) {
+        return toResponse(paymentDao.findByBookingId(bookingId)
+                .orElseThrow(() -> new PaymentNotFoundException(bookingId)));
+    }
+
+    @Override
+    public List<PaymentResponse> getPaymentsByUserId(Long userId) {
+        return paymentDao.findByUserId(userId).stream().map(this::toResponse).toList();
+    }
+
+    private PaymentResponse toResponse(PaymentEntity entity) {
+        return new PaymentResponse(
+                entity.getId(), entity.getBookingId(), entity.getUserId(),
+                entity.getAmount(), entity.getCurrency(),
+                entity.getPaymentMethodType(), entity.getProvider(),
+                entity.getStatus().name(), entity.getFailureReason(),
+                entity.getCreatedAt());
+    }
+}

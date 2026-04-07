@@ -2,7 +2,7 @@ package com.example.ebus.payment.kafka;
 
 import com.example.ebus.events.Topics;
 import com.example.ebus.events.booking.*;
-import com.example.ebus.payment.service.PaymentService;
+import com.example.ebus.payment.service.PaymentProcessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,11 +14,11 @@ public class BookingEventConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(BookingEventConsumer.class);
 
-    private final PaymentService paymentService;
+    private final PaymentProcessor paymentProcessor;
     private final ObjectMapper objectMapper;
 
-    public BookingEventConsumer(PaymentService paymentService, ObjectMapper objectMapper) {
-        this.paymentService = paymentService;
+    public BookingEventConsumer(PaymentProcessor paymentProcessor, ObjectMapper objectMapper) {
+        this.paymentProcessor = paymentProcessor;
         this.objectMapper = objectMapper;
     }
 
@@ -27,7 +27,7 @@ public class BookingEventConsumer {
         try {
             BookingCreatedEvent event = objectMapper.readValue(message, BookingCreatedEvent.class);
             log.info("Received booking-created event for bookingId={}", event.bookingId());
-            paymentService.processBookingCreated(event);
+            paymentProcessor.processBookingCreated(event);
         } catch (Exception e) {
             log.error("Failed to process booking-created event", e);
         }

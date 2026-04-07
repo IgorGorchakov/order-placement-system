@@ -3,7 +3,8 @@ package com.example.ebus.booking.controller;
 import com.example.ebus.booking.dto.BookingResponse;
 import com.example.ebus.booking.dto.CreateBookingRequest;
 import com.example.ebus.booking.exception.BookingNotFoundException;
-import com.example.ebus.booking.service.BookingService;
+import com.example.ebus.booking.service.BookingCommandService;
+import com.example.ebus.booking.service.BookingQueryService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,7 +25,10 @@ import static org.mockito.Mockito.when;
 class BookingControllerTest {
 
     @Mock
-    private BookingService bookingService;
+    private BookingCommandService bookingCommandService;
+
+    @Mock
+    private BookingQueryService bookingQueryService;
 
     @InjectMocks
     private BookingController bookingController;
@@ -36,7 +40,7 @@ class BookingControllerTest {
                 1L, 100L, 1L, "PENDING", Arrays.asList("1A", "1B"),
                 BigDecimal.valueOf(200), "USD", LocalDateTime.now());
 
-        when(bookingService.createBooking(any(CreateBookingRequest.class))).thenReturn(response);
+        when(bookingCommandService.createBooking(any(CreateBookingRequest.class))).thenReturn(response);
 
         BookingResponse result = bookingController.createBooking(request);
 
@@ -52,7 +56,7 @@ class BookingControllerTest {
                 1L, 100L, 1L, "PENDING", Arrays.asList("1A", "1B"),
                 BigDecimal.valueOf(200), "USD", LocalDateTime.now());
 
-        when(bookingService.getBooking(1L)).thenReturn(response);
+        when(bookingQueryService.getBooking(1L)).thenReturn(response);
 
         BookingResponse result = bookingController.getBooking(1L);
 
@@ -62,7 +66,7 @@ class BookingControllerTest {
 
     @Test
     void getBooking_NotFound() {
-        when(bookingService.getBooking(1L)).thenThrow(new BookingNotFoundException(1L));
+        when(bookingQueryService.getBooking(1L)).thenThrow(new BookingNotFoundException(1L));
 
         assertThatThrownBy(() -> bookingController.getBooking(1L))
                 .isInstanceOf(BookingNotFoundException.class);
@@ -74,7 +78,7 @@ class BookingControllerTest {
                 1L, 100L, 1L, "PENDING", Arrays.asList("1A"),
                 BigDecimal.valueOf(100), "USD", LocalDateTime.now());
 
-        when(bookingService.getBookingsByUser(100L)).thenReturn(List.of(response));
+        when(bookingQueryService.getBookingsByUser(100L)).thenReturn(List.of(response));
 
         List<BookingResponse> responses = bookingController.getBookingsByUser(100L);
 
@@ -88,7 +92,7 @@ class BookingControllerTest {
                 1L, 100L, 1L, "CANCELLED", Arrays.asList("1A"),
                 BigDecimal.valueOf(100), "USD", LocalDateTime.now());
 
-        when(bookingService.cancelBooking(1L)).thenReturn(response);
+        when(bookingCommandService.cancelBooking(1L)).thenReturn(response);
 
         BookingResponse result = bookingController.cancelBooking(1L);
 
@@ -98,7 +102,7 @@ class BookingControllerTest {
 
     @Test
     void cancelBooking_NotFound() {
-        when(bookingService.cancelBooking(1L)).thenThrow(new BookingNotFoundException(1L));
+        when(bookingCommandService.cancelBooking(1L)).thenThrow(new BookingNotFoundException(1L));
 
         assertThatThrownBy(() -> bookingController.cancelBooking(1L))
                 .isInstanceOf(BookingNotFoundException.class);

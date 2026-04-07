@@ -3,7 +3,7 @@ package com.example.ebus.search.controller;
 import com.example.ebus.search.dto.TripSearchRequest;
 import com.example.ebus.search.dto.TripSearchResponse;
 import com.example.ebus.search.exception.TripNotFoundException;
-import com.example.ebus.search.service.SearchService;
+import com.example.ebus.search.service.TripQueryService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 class SearchControllerTest {
 
     @Mock
-    private SearchService searchService;
+    private TripQueryService tripQueryService;
 
     @InjectMocks
     private SearchController searchController;
@@ -52,7 +52,7 @@ class SearchControllerTest {
                 .availableSeats(30)
                 .build();
 
-        when(searchService.searchTrips(request)).thenReturn(List.of(response));
+        when(tripQueryService.searchTrips(request)).thenReturn(List.of(response));
 
         List<TripSearchResponse> responses = searchController.searchTrips(request);
 
@@ -73,7 +73,7 @@ class SearchControllerTest {
                 .availableSeats(30)
                 .build();
 
-        when(searchService.getTripById("trip-1")).thenReturn(response);
+        when(tripQueryService.getTripById("trip-1")).thenReturn(response);
 
         TripSearchResponse result = searchController.getTripById("trip-1");
 
@@ -83,7 +83,7 @@ class SearchControllerTest {
 
     @Test
     void getTripById_NotFound() {
-        when(searchService.getTripById("trip-99")).thenThrow(new TripNotFoundException("trip-99"));
+        when(tripQueryService.getTripById("trip-99")).thenThrow(new TripNotFoundException("trip-99"));
 
         assertThatThrownBy(() -> searchController.getTripById("trip-99"))
                 .isInstanceOf(TripNotFoundException.class);
@@ -91,7 +91,7 @@ class SearchControllerTest {
 
     @Test
     void autocomplete_Success() {
-        when(searchService.autocomplete("New")).thenReturn(List.of("Newark", "NYC"));
+        when(tripQueryService.autocomplete("New")).thenReturn(List.of("Newark", "NYC"));
 
         List<String> suggestions = searchController.autocomplete("New");
 
