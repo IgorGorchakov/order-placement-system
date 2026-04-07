@@ -3,10 +3,6 @@ spring:
     name: search-service
   elasticsearch:
     uris: http://localhost:9200
-  data:
-    redis:
-      host: localhost
-      port: 6379
   kafka:
     consumer:
       bootstrap-servers: localhost:9092
@@ -27,9 +23,6 @@ spring:
       on-profile: docker
   elasticsearch:
     uris: http://elasticsearch:9200
-  data:
-    redis:
-      host: redis
   kafka:
     consumer:
       bootstrap-servers: kafka:29092

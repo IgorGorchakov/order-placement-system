@@ -23,8 +23,3 @@ spring:
       on-profile: docker
   datasource:
     url: jdbc:postgresql://postgres:5432/ebus_users
-  data:
-    redis:
-      host: redis
-  kafka:
-    bootstrap-servers: kafka:29092
