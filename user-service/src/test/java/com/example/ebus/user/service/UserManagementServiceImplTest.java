@@ -12,12 +12,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -97,25 +94,6 @@ class UserManagementServiceImplTest {
                 .hasMessageContaining("existing@example.com");
 
         verify(userDao, never()).save(any());
-    }
-
-    @Test
-    void getAllUsers_Success() {
-        when(userDao.findAll(any(PageRequest.class))).thenReturn(new PageImpl<>(List.of(sampleUser)));
-
-        List<UserResponse> responses = userManagementService.getAllUsers(100);
-
-        assertThat(responses).hasSize(1);
-        assertThat(responses.get(0).getEmail()).isEqualTo("test@example.com");
-    }
-
-    @Test
-    void getAllUsers_EmptyList() {
-        when(userDao.findAll(any(PageRequest.class))).thenReturn(new PageImpl<>(List.of()));
-
-        List<UserResponse> responses = userManagementService.getAllUsers(100);
-
-        assertThat(responses).isEmpty();
     }
 
     @Test

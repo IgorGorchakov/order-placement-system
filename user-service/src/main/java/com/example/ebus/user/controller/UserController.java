@@ -4,7 +4,6 @@ import com.example.ebus.user.dto.*;
 import com.example.ebus.user.service.PaymentMethodService;
 import com.example.ebus.user.service.UserManagementService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -23,12 +22,6 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public UserResponse createUser(@Valid @RequestBody CreateUserRequest request) {
         return userManagementService.createUser(request);
-    }
-
-    @GetMapping
-    public List<UserResponse> getAllUsers(
-            @RequestParam(defaultValue = "100") @Max(1000) int limit) {
-        return userManagementService.getAllUsers(limit);
     }
 
     @GetMapping("/{id}")

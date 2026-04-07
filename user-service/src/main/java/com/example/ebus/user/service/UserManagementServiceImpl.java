@@ -7,12 +7,9 @@ import com.example.ebus.user.entity.UserEntity;
 import com.example.ebus.user.exception.EmailAlreadyExistsException;
 import com.example.ebus.user.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -37,13 +34,6 @@ public class UserManagementServiceImpl implements UserManagementService {
                 .build();
 
         return toResponse(userDao.save(user));
-    }
-
-    @Override
-    public List<UserResponse> getAllUsers(int limit) {
-        return userDao.findAll(PageRequest.of(0, Math.min(limit, 1000)))
-                .getContent()
-                .stream().map(this::toResponse).toList();
     }
 
     @Override
