@@ -4,7 +4,11 @@ import com.example.ebus.booking.dto.*;
 import com.example.ebus.booking.entity.BusEntity;
 import com.example.ebus.booking.entity.RouteEntity;
 import com.example.ebus.booking.exception.TripNotFoundException;
-import com.example.ebus.booking.service.TripService;
+import com.example.ebus.booking.service.BusManagementService;
+import com.example.ebus.booking.service.RouteManagementService;
+import com.example.ebus.booking.service.SeatAvailabilityService;
+import com.example.ebus.booking.service.TripManagementService;
+import com.example.ebus.booking.service.TripQueryService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,7 +30,19 @@ import static org.mockito.Mockito.when;
 class TripControllerTest {
 
     @Mock
-    private TripService tripService;
+    private TripQueryService tripQueryService;
+
+    @Mock
+    private TripManagementService tripManagementService;
+
+    @Mock
+    private SeatAvailabilityService seatAvailabilityService;
+
+    @Mock
+    private RouteManagementService routeManagementService;
+
+    @Mock
+    private BusManagementService busManagementService;
 
     @InjectMocks
     private TripController tripController;
@@ -38,7 +54,7 @@ class TripControllerTest {
                 LocalDateTime.of(2026, 4, 10, 12, 0), BigDecimal.valueOf(50),
                 "USD", 40, "Test Bus Co");
 
-        when(tripService.findTrips(eq("NYC"), eq("Boston"), eq(LocalDate.of(2026, 4, 10))))
+        when(tripQueryService.findTrips(eq("NYC"), eq("Boston"), eq(LocalDate.of(2026, 4, 10))))
                 .thenReturn(List.of(response));
 
         List<TripResponse> responses = tripController.findTrips("NYC", "Boston", LocalDate.of(2026, 4, 10));
@@ -54,7 +70,7 @@ class TripControllerTest {
                 LocalDateTime.of(2026, 4, 10, 12, 0), BigDecimal.valueOf(50),
                 "USD", 40, "Test Bus Co");
 
-        when(tripService.getTrip(1L)).thenReturn(response);
+        when(tripQueryService.getTrip(1L)).thenReturn(response);
 
         TripResponse result = tripController.getTrip(1L);
 
@@ -64,7 +80,7 @@ class TripControllerTest {
 
     @Test
     void getTrip_NotFound() {
-        when(tripService.getTrip(1L)).thenThrow(new TripNotFoundException(1L));
+        when(tripQueryService.getTrip(1L)).thenThrow(new TripNotFoundException(1L));
 
         assertThatThrownBy(() -> tripController.getTrip(1L))
                 .isInstanceOf(TripNotFoundException.class);
@@ -75,7 +91,7 @@ class TripControllerTest {
         SeatAvailabilityResponse response = new SeatAvailabilityResponse(
                 1L, 20L, 10, 4, Map.of("1A", "window"), Map.of("1A", true));
 
-        when(tripService.getSeatAvailability(1L)).thenReturn(response);
+        when(seatAvailabilityService.getSeatAvailability(1L)).thenReturn(response);
 
         SeatAvailabilityResponse result = tripController.getSeatAvailability(1L);
 
@@ -91,7 +107,7 @@ class TripControllerTest {
         route.setId(1L);
         route.setOrigin("NYC");
 
-        when(tripService.createRoute(any(CreateRouteRequest.class))).thenReturn(route);
+        when(routeManagementService.createRoute(any(CreateRouteRequest.class))).thenReturn(route);
 
         RouteEntity result = tripController.createRoute(request);
 
@@ -111,7 +127,7 @@ class TripControllerTest {
                 LocalDateTime.of(2026, 4, 10, 12, 0), BigDecimal.valueOf(50),
                 "USD", 40, "Test Bus Co");
 
-        when(tripService.createTrip(any(CreateTripRequest.class))).thenReturn(response);
+        when(tripManagementService.createTrip(any(CreateTripRequest.class))).thenReturn(response);
 
         TripResponse result = tripController.createTrip(request);
 
@@ -126,7 +142,7 @@ class TripControllerTest {
         bus.setId(1L);
         bus.setPlateNumber("ABC-1234");
 
-        when(tripService.createBus(any(CreateBusRequest.class))).thenReturn(bus);
+        when(busManagementService.createBus(any(CreateBusRequest.class))).thenReturn(bus);
 
         BusEntity result = tripController.createBus(request);
 
