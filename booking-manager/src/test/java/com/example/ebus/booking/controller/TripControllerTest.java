@@ -14,6 +14,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -54,13 +57,14 @@ class TripControllerTest {
                 LocalDateTime.of(2026, 4, 10, 12, 0), BigDecimal.valueOf(50),
                 "USD", 40, "Test Bus Co");
 
-        when(tripQueryService.findTrips(eq("NYC"), eq("Boston"), eq(LocalDate.of(2026, 4, 10))))
-                .thenReturn(List.of(response));
+        Page<TripResponse> page = new PageImpl<>(List.of(response));
+        when(tripQueryService.findTrips(eq("NYC"), eq("Boston"), eq(LocalDate.of(2026, 4, 10)), any(PageRequest.class)))
+                .thenReturn(page);
 
-        List<TripResponse> responses = tripController.findTrips("NYC", "Boston", LocalDate.of(2026, 4, 10));
+        Page<TripResponse> responses = tripController.findTrips("NYC", "Boston", LocalDate.of(2026, 4, 10), 0, 20);
 
         assertThat(responses).hasSize(1);
-        assertThat(responses.get(0).id()).isEqualTo(1);
+        assertThat(responses.getContent().get(0).id()).isEqualTo(1);
     }
 
     @Test

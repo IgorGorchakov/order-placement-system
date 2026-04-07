@@ -5,10 +5,11 @@ import com.example.ebus.booking.dto.BookingResponse;
 import com.example.ebus.booking.entity.BookingEntity;
 import com.example.ebus.booking.exception.BookingNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -23,8 +24,8 @@ public class BookingQueryServiceImpl implements BookingQueryService {
     }
 
     @Override
-    public List<BookingResponse> getBookingsByUser(Long userId) {
-        return bookingDao.findByUserId(userId).stream().map(this::toResponse).toList();
+    public Page<BookingResponse> getBookingsByUser(Long userId, Pageable pageable) {
+        return bookingDao.findByUserId(userId, pageable).map(this::toResponse);
     }
 
     private BookingResponse toResponse(BookingEntity entity) {

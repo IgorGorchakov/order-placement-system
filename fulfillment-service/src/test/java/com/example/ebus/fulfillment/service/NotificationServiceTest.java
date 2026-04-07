@@ -11,6 +11,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -87,20 +90,22 @@ class NotificationServiceTest {
         notification.setRecipient("john@example.com");
         notification.setMessage("Test message");
 
-        when(notificationDao.findByUserId(200L)).thenReturn(List.of(notification));
+        Page<NotificationEntity> page = new PageImpl<>(List.of(notification));
+        when(notificationDao.findByUserId(200L, PageRequest.of(0, 20))).thenReturn(page);
 
-        List<NotificationResponse> responses = notificationService.getNotificationsByUser(200L);
+        Page<NotificationResponse> responses = notificationService.getNotificationsByUser(200L, PageRequest.of(0, 20));
 
         assertThat(responses).hasSize(1);
-        assertThat(responses.get(0).userId()).isEqualTo(200L);
-        assertThat(responses.get(0).type()).isEqualTo("TICKET_ISSUED");
+        assertThat(responses.getContent().get(0).userId()).isEqualTo(200L);
+        assertThat(responses.getContent().get(0).type()).isEqualTo("TICKET_ISSUED");
     }
 
     @Test
     void getNotificationsByUser_EmptyList() {
-        when(notificationDao.findByUserId(200L)).thenReturn(List.of());
+        Page<NotificationEntity> page = new PageImpl<>(List.of());
+        when(notificationDao.findByUserId(200L, PageRequest.of(0, 20))).thenReturn(page);
 
-        List<NotificationResponse> responses = notificationService.getNotificationsByUser(200L);
+        Page<NotificationResponse> responses = notificationService.getNotificationsByUser(200L, PageRequest.of(0, 20));
 
         assertThat(responses).isEmpty();
     }
@@ -116,20 +121,23 @@ class NotificationServiceTest {
         notification.setRecipient("john@example.com");
         notification.setMessage("Test message");
 
-        when(notificationDao.findByBookingId(100L)).thenReturn(List.of(notification));
+        Page<NotificationEntity> page = new PageImpl<>(List.of(notification));
+        when(notificationDao.findByBookingId(100L, PageRequest.of(0, 20))).thenReturn(page);
 
-        List<NotificationResponse> responses = notificationService.getNotificationsByBooking(100L);
+        Page<NotificationResponse> responses = notificationService.getNotificationsByBooking(100L, PageRequest.of(0, 20));
 
         assertThat(responses).hasSize(1);
-        assertThat(responses.get(0).bookingId()).isEqualTo(100L);
+        assertThat(responses.getContent().get(0).bookingId()).isEqualTo(100L);
     }
 
     @Test
     void getNotificationsByBooking_EmptyList() {
-        when(notificationDao.findByBookingId(100L)).thenReturn(List.of());
+        Page<NotificationEntity> page = new PageImpl<>(List.of());
+        when(notificationDao.findByBookingId(100L, PageRequest.of(0, 20))).thenReturn(page);
 
-        List<NotificationResponse> responses = notificationService.getNotificationsByBooking(100L);
+        Page<NotificationResponse> responses = notificationService.getNotificationsByBooking(100L, PageRequest.of(0, 20));
 
         assertThat(responses).isEmpty();
     }
 }
+

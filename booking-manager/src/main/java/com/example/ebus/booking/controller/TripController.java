@@ -9,12 +9,15 @@ import com.example.ebus.booking.service.SeatAvailabilityService;
 import com.example.ebus.booking.service.TripManagementService;
 import com.example.ebus.booking.service.TripQueryService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -39,11 +42,15 @@ public class TripController {
     }
 
     @GetMapping("/trips")
-    public List<TripResponse> findTrips(
+    public Page<TripResponse> findTrips(
             @RequestParam(required = false) String origin,
             @RequestParam(required = false) String destination,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return tripQueryService.findTrips(origin, destination, date);
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") @Max(100) int size) {
+        return tripQueryService.findTrips(
+                origin, destination, date,
+                PageRequest.of(page, Math.min(size, 100), Sort.by("departureTime").ascending()));
     }
 
     @GetMapping("/trips/{id}")

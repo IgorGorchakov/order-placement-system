@@ -13,6 +13,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
@@ -80,26 +82,28 @@ class TripQueryServiceImplTest {
 
         SearchHits<TripDocument> searchHits = mock(SearchHits.class);
         when(searchHits.getSearchHits()).thenReturn(List.of(hit));
+        when(searchHits.getTotalHits()).thenReturn(1L);
 
         when(elasticsearchOperations.search(any(NativeQuery.class), eq(TripDocument.class)))
                 .thenReturn(searchHits);
 
-        List<TripSearchResponse> responses = tripQueryService.searchTrips(searchRequest);
+        Page<TripSearchResponse> responses = tripQueryService.searchTrips(searchRequest, PageRequest.of(0, 20));
 
         assertThat(responses).hasSize(1);
-        assertThat(responses.get(0).getId()).isEqualTo("trip-1");
-        assertThat(responses.get(0).getOrigin()).isEqualTo("NYC");
+        assertThat(responses.getContent().get(0).getId()).isEqualTo("trip-1");
+        assertThat(responses.getContent().get(0).getOrigin()).isEqualTo("NYC");
     }
 
     @Test
     void searchTrips_EmptyResult() {
         SearchHits<TripDocument> searchHits = mock(SearchHits.class);
         when(searchHits.getSearchHits()).thenReturn(List.of());
+        when(searchHits.getTotalHits()).thenReturn(0L);
 
         when(elasticsearchOperations.search(any(NativeQuery.class), eq(TripDocument.class)))
                 .thenReturn(searchHits);
 
-        List<TripSearchResponse> responses = tripQueryService.searchTrips(searchRequest);
+        Page<TripSearchResponse> responses = tripQueryService.searchTrips(searchRequest, PageRequest.of(0, 20));
 
         assertThat(responses).isEmpty();
     }

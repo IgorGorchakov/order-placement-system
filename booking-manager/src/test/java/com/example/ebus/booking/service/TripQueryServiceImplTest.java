@@ -10,6 +10,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -50,31 +53,34 @@ class TripQueryServiceImplTest {
     @Test
     void findTrips_WithAllParams() {
         LocalDate date = LocalDate.of(2026, 4, 10);
-        when(tripDao.findTrips("NYC", "Boston", date.atStartOfDay(), date.plusDays(1).atStartOfDay()))
-                .thenReturn(List.of(sampleTrip));
+        Page<TripEntity> page = new PageImpl<>(List.of(sampleTrip));
+        when(tripDao.findTrips(eq("NYC"), eq("Boston"), eq(date.atStartOfDay()), eq(date.plusDays(1).atStartOfDay()), any(PageRequest.class)))
+                .thenReturn(page);
 
-        List<TripResponse> responses = tripQueryService.findTrips("NYC", "Boston", date);
+        Page<TripResponse> responses = tripQueryService.findTrips("NYC", "Boston", date, PageRequest.of(0, 20));
 
         assertThat(responses).hasSize(1);
-        assertThat(responses.get(0).id()).isEqualTo(1L);
+        assertThat(responses.getContent().get(0).id()).isEqualTo(1L);
     }
 
     @Test
     void findTrips_WithNullDate() {
-        when(tripDao.findTrips("NYC", "Boston", null, null))
-                .thenReturn(List.of(sampleTrip));
+        Page<TripEntity> page = new PageImpl<>(List.of(sampleTrip));
+        when(tripDao.findTrips(eq("NYC"), eq("Boston"), isNull(), isNull(), any(PageRequest.class)))
+                .thenReturn(page);
 
-        List<TripResponse> responses = tripQueryService.findTrips("NYC", "Boston", null);
+        Page<TripResponse> responses = tripQueryService.findTrips("NYC", "Boston", null, PageRequest.of(0, 20));
 
         assertThat(responses).hasSize(1);
-        verify(tripDao).findTrips("NYC", "Boston", null, null);
+        verify(tripDao).findTrips(eq("NYC"), eq("Boston"), isNull(), isNull(), any(PageRequest.class));
     }
 
     @Test
     void findTrips_EmptyResult() {
-        when(tripDao.findTrips(any(), any(), any(), any())).thenReturn(List.of());
+        Page<TripEntity> page = new PageImpl<>(List.of());
+        when(tripDao.findTrips(any(), any(), any(), any(), any(PageRequest.class))).thenReturn(page);
 
-        List<TripResponse> responses = tripQueryService.findTrips("NYC", "Boston", LocalDate.now());
+        Page<TripResponse> responses = tripQueryService.findTrips("NYC", "Boston", LocalDate.now(), PageRequest.of(0, 20));
 
         assertThat(responses).isEmpty();
     }

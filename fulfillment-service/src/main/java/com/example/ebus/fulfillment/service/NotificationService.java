@@ -7,9 +7,9 @@ import com.example.ebus.fulfillment.dto.NotificationResponse;
 import com.example.ebus.fulfillment.entity.NotificationEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class NotificationService {
@@ -62,12 +62,12 @@ public class NotificationService {
         notificationDao.save(notification);
     }
 
-    public List<NotificationResponse> getNotificationsByUser(Long userId) {
-        return notificationDao.findByUserId(userId).stream().map(this::toResponse).toList();
+    public Page<NotificationResponse> getNotificationsByUser(Long userId, Pageable pageable) {
+        return notificationDao.findByUserId(userId, pageable).map(this::toResponse);
     }
 
-    public List<NotificationResponse> getNotificationsByBooking(Long bookingId) {
-        return notificationDao.findByBookingId(bookingId).stream().map(this::toResponse).toList();
+    public Page<NotificationResponse> getNotificationsByBooking(Long bookingId, Pageable pageable) {
+        return notificationDao.findByBookingId(bookingId, pageable).map(this::toResponse);
     }
 
     private NotificationResponse toResponse(NotificationEntity entity) {

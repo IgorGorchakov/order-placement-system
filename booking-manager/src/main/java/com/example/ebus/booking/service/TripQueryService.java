@@ -1,13 +1,14 @@
 package com.example.ebus.booking.service;
 
 import com.example.ebus.booking.dto.TripResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
-import java.util.List;
 
 public interface TripQueryService {
 
-    List<TripResponse> findTrips(String origin, String destination, LocalDate date);
+    Page<TripResponse> findTrips(String origin, String destination, LocalDate date, Pageable pageable);
 
     TripResponse getTrip(Long id);
 }

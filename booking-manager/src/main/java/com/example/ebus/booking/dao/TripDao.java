@@ -1,11 +1,13 @@
 package com.example.ebus.booking.dao;
 
 import com.example.ebus.booking.entity.TripEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
 import java.time.LocalDateTime;
-import java.util.List;
 
 public interface TripDao extends JpaRepository<TripEntity, Long> {
 
@@ -14,8 +16,9 @@ public interface TripDao extends JpaRepository<TripEntity, Long> {
            "AND (:destination IS NULL OR r.destination = :destination) " +
            "AND (:dateFrom IS NULL OR t.departureTime >= :dateFrom) " +
            "AND (:dateTo IS NULL OR t.departureTime <= :dateTo)")
-    List<TripEntity> findTrips(@Param("origin") String origin,
+    Page<TripEntity> findTrips(@Param("origin") String origin,
                                @Param("destination") String destination,
                                @Param("dateFrom") LocalDateTime dateFrom,
-                               @Param("dateTo") LocalDateTime dateTo);
+                               @Param("dateTo") LocalDateTime dateTo,
+                               Pageable pageable);
 }

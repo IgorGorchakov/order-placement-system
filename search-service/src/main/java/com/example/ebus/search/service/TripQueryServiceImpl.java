@@ -8,6 +8,9 @@ import com.example.ebus.search.dto.TripSearchResponse;
 import com.example.ebus.search.exception.TripNotFoundException;
 import com.example.ebus.search.repository.TripSearchRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHits;
@@ -25,7 +28,7 @@ public class TripQueryServiceImpl implements TripQueryService {
     private final ElasticsearchOperations elasticsearchOperations;
 
     @Override
-    public List<TripSearchResponse> searchTrips(TripSearchRequest request) {
+    public Page<TripSearchResponse> searchTrips(TripSearchRequest request, Pageable pageable) {
         BoolQuery.Builder bool = new BoolQuery.Builder();
 
         if (request.origin() != null) {
@@ -76,12 +79,15 @@ public class TripQueryServiceImpl implements TripQueryService {
 
         NativeQuery query = NativeQuery.builder()
                 .withQuery(Query.of(q -> q.bool(bool.build())))
+                .withPageable(pageable)
                 .build();
 
         SearchHits<TripDocument> hits = elasticsearchOperations.search(query, TripDocument.class);
-        return hits.getSearchHits().stream()
+        List<TripSearchResponse> content = hits.getSearchHits().stream()
                 .map(hit -> toResponse(hit.getContent()))
                 .toList();
+
+        return new PageImpl<>(content, pageable, hits.getTotalHits());
     }
 
     @Override
@@ -97,6 +103,7 @@ public class TripQueryServiceImpl implements TripQueryService {
                 .withQuery(Query.of(q -> q.bool(b -> b
                         .should(Query.of(s -> s.prefix(p -> p.field("origin").value(query.toLowerCase()))))
                         .should(Query.of(s -> s.prefix(p -> p.field("destination").value(query.toLowerCase())))))))
+                .withMaxResults(10)
                 .build();
 
         SearchHits<TripDocument> hits = elasticsearchOperations.search(nativeQuery, TripDocument.class);

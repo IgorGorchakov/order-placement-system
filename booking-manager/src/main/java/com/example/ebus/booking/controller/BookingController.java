@@ -5,10 +5,12 @@ import com.example.ebus.booking.dto.CreateBookingRequest;
 import com.example.ebus.booking.service.BookingCommandService;
 import com.example.ebus.booking.service.BookingQueryService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -35,8 +37,13 @@ public class BookingController {
     }
 
     @GetMapping("/user/{userId}")
-    public List<BookingResponse> getBookingsByUser(@PathVariable Long userId) {
-        return bookingQueryService.getBookingsByUser(userId);
+    public Page<BookingResponse> getBookingsByUser(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") @Max(100) int size) {
+        return bookingQueryService.getBookingsByUser(
+                userId,
+                PageRequest.of(page, Math.min(size, 100), Sort.by("createdAt").descending()));
     }
 
     @PostMapping("/{id}/cancel")

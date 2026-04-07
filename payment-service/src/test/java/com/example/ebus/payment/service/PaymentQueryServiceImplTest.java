@@ -11,6 +11,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -85,19 +88,21 @@ class PaymentQueryServiceImplTest {
 
     @Test
     void getPaymentsByUserId_Success() {
-        when(paymentDao.findByUserId(100L)).thenReturn(List.of(samplePayment));
+        Page<PaymentEntity> page = new PageImpl<>(List.of(samplePayment));
+        when(paymentDao.findByUserId(100L, PageRequest.of(0, 20))).thenReturn(page);
 
-        List<PaymentResponse> responses = paymentQueryService.getPaymentsByUserId(100L);
+        Page<PaymentResponse> responses = paymentQueryService.getPaymentsByUserId(100L, PageRequest.of(0, 20));
 
         assertThat(responses).hasSize(1);
-        assertThat(responses.get(0).userId()).isEqualTo(100L);
+        assertThat(responses.getContent().get(0).userId()).isEqualTo(100L);
     }
 
     @Test
     void getPaymentsByUserId_EmptyList() {
-        when(paymentDao.findByUserId(100L)).thenReturn(List.of());
+        Page<PaymentEntity> page = new PageImpl<>(List.of());
+        when(paymentDao.findByUserId(100L, PageRequest.of(0, 20))).thenReturn(page);
 
-        List<PaymentResponse> responses = paymentQueryService.getPaymentsByUserId(100L);
+        Page<PaymentResponse> responses = paymentQueryService.getPaymentsByUserId(100L, PageRequest.of(0, 20));
 
         assertThat(responses).isEmpty();
     }

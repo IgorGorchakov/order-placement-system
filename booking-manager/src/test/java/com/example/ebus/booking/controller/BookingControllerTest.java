@@ -10,6 +10,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -78,12 +81,13 @@ class BookingControllerTest {
                 1L, 100L, 1L, "PENDING", Arrays.asList("1A"),
                 BigDecimal.valueOf(100), "USD", LocalDateTime.now());
 
-        when(bookingQueryService.getBookingsByUser(100L)).thenReturn(List.of(response));
+        Page<BookingResponse> page = new PageImpl<>(List.of(response));
+        when(bookingQueryService.getBookingsByUser(any(Long.class), any(PageRequest.class))).thenReturn(page);
 
-        List<BookingResponse> responses = bookingController.getBookingsByUser(100L);
+        Page<BookingResponse> responses = bookingController.getBookingsByUser(100L, 0, 20);
 
         assertThat(responses).hasSize(1);
-        assertThat(responses.get(0).userId()).isEqualTo(100);
+        assertThat(responses.getContent().get(0).userId()).isEqualTo(100);
     }
 
     @Test

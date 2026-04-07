@@ -4,9 +4,10 @@ import com.example.ebus.fulfillment.dto.NotificationResponse;
 import com.example.ebus.fulfillment.dto.TicketResponse;
 import com.example.ebus.fulfillment.service.NotificationService;
 import com.example.ebus.fulfillment.service.TicketService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -31,17 +32,32 @@ public class TicketController {
     }
 
     @GetMapping("/tickets/user/{userId}")
-    public List<TicketResponse> getTicketsByUser(@PathVariable Long userId) {
-        return ticketService.getTicketsByUser(userId);
+    public Page<TicketResponse> getTicketsByUser(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ticketService.getTicketsByUser(
+                userId,
+                PageRequest.of(page, Math.min(size, 100), Sort.by("issuedAt").descending()));
     }
 
     @GetMapping("/notifications/user/{userId}")
-    public List<NotificationResponse> getNotificationsByUser(@PathVariable Long userId) {
-        return notificationService.getNotificationsByUser(userId);
+    public Page<NotificationResponse> getNotificationsByUser(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return notificationService.getNotificationsByUser(
+                userId,
+                PageRequest.of(page, Math.min(size, 100), Sort.by("sentAt").descending()));
     }
 
     @GetMapping("/notifications/booking/{bookingId}")
-    public List<NotificationResponse> getNotificationsByBooking(@PathVariable Long bookingId) {
-        return notificationService.getNotificationsByBooking(bookingId);
+    public Page<NotificationResponse> getNotificationsByBooking(
+            @PathVariable Long bookingId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return notificationService.getNotificationsByBooking(
+                bookingId,
+                PageRequest.of(page, Math.min(size, 100), Sort.by("sentAt").descending()));
     }
 }

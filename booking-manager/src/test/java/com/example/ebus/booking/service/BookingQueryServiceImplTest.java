@@ -11,6 +11,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -65,19 +68,21 @@ class BookingQueryServiceImplTest {
 
     @Test
     void getBookingsByUser_Success() {
-        when(bookingDao.findByUserId(100L)).thenReturn(List.of(sampleBooking));
+        Page<BookingEntity> page = new PageImpl<>(List.of(sampleBooking));
+        when(bookingDao.findByUserId(100L, PageRequest.of(0, 20))).thenReturn(page);
 
-        List<BookingResponse> responses = bookingQueryService.getBookingsByUser(100L);
+        Page<BookingResponse> responses = bookingQueryService.getBookingsByUser(100L, PageRequest.of(0, 20));
 
         assertThat(responses).hasSize(1);
-        assertThat(responses.get(0).userId()).isEqualTo(100L);
+        assertThat(responses.getContent().get(0).userId()).isEqualTo(100L);
     }
 
     @Test
     void getBookingsByUser_EmptyList() {
-        when(bookingDao.findByUserId(100L)).thenReturn(List.of());
+        Page<BookingEntity> page = new PageImpl<>(List.of());
+        when(bookingDao.findByUserId(100L, PageRequest.of(0, 20))).thenReturn(page);
 
-        List<BookingResponse> responses = bookingQueryService.getBookingsByUser(100L);
+        Page<BookingResponse> responses = bookingQueryService.getBookingsByUser(100L, PageRequest.of(0, 20));
 
         assertThat(responses).isEmpty();
     }

@@ -7,11 +7,12 @@ import com.example.ebus.fulfillment.entity.TicketStatus;
 import com.example.ebus.fulfillment.exception.TicketNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -72,8 +73,8 @@ public class TicketService {
                 .orElseThrow(() -> new TicketNotFoundException(bookingId)));
     }
 
-    public List<TicketResponse> getTicketsByUser(Long userId) {
-        return ticketDao.findByUserId(userId).stream().map(this::toResponse).toList();
+    public Page<TicketResponse> getTicketsByUser(Long userId, Pageable pageable) {
+        return ticketDao.findByUserId(userId, pageable).map(this::toResponse);
     }
 
     private TicketResponse toResponse(TicketEntity entity) {

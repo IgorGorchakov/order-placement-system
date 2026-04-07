@@ -152,19 +152,23 @@ class TicketServiceTest {
 
     @Test
     void getTicketsByUser_Success() {
-        when(ticketDao.findByUserId(200L)).thenReturn(List.of(sampleTicket));
+        org.springframework.data.domain.Page<com.example.ebus.fulfillment.entity.TicketEntity> page = 
+                new org.springframework.data.domain.PageImpl<>(List.of(sampleTicket));
+        when(ticketDao.findByUserId(200L, org.springframework.data.domain.PageRequest.of(0, 20))).thenReturn(page);
 
-        List<TicketResponse> responses = ticketService.getTicketsByUser(200L);
+        org.springframework.data.domain.Page<TicketResponse> responses = ticketService.getTicketsByUser(200L, org.springframework.data.domain.PageRequest.of(0, 20));
 
         assertThat(responses).hasSize(1);
-        assertThat(responses.get(0).userId()).isEqualTo(200L);
+        assertThat(responses.getContent().get(0).userId()).isEqualTo(200L);
     }
 
     @Test
     void getTicketsByUser_EmptyList() {
-        when(ticketDao.findByUserId(200L)).thenReturn(List.of());
+        org.springframework.data.domain.Page<com.example.ebus.fulfillment.entity.TicketEntity> page = 
+                new org.springframework.data.domain.PageImpl<>(List.of());
+        when(ticketDao.findByUserId(200L, org.springframework.data.domain.PageRequest.of(0, 20))).thenReturn(page);
 
-        List<TicketResponse> responses = ticketService.getTicketsByUser(200L);
+        org.springframework.data.domain.Page<TicketResponse> responses = ticketService.getTicketsByUser(200L, org.springframework.data.domain.PageRequest.of(0, 20));
 
         assertThat(responses).isEmpty();
     }

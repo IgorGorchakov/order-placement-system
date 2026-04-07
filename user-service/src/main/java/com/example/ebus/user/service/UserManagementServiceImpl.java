@@ -7,6 +7,7 @@ import com.example.ebus.user.entity.UserEntity;
 import com.example.ebus.user.exception.EmailAlreadyExistsException;
 import com.example.ebus.user.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,8 +40,10 @@ public class UserManagementServiceImpl implements UserManagementService {
     }
 
     @Override
-    public List<UserResponse> getAllUsers() {
-        return userDao.findAll().stream().map(this::toResponse).toList();
+    public List<UserResponse> getAllUsers(int limit) {
+        return userDao.findAll(PageRequest.of(0, Math.min(limit, 1000)))
+                .getContent()
+                .stream().map(this::toResponse).toList();
     }
 
     @Override

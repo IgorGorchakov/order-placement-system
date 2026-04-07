@@ -5,9 +5,9 @@ import com.example.ebus.payment.dto.PaymentResponse;
 import com.example.ebus.payment.entity.PaymentEntity;
 import com.example.ebus.payment.exception.PaymentNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -28,8 +28,8 @@ public class PaymentQueryServiceImpl implements PaymentQueryService {
     }
 
     @Override
-    public List<PaymentResponse> getPaymentsByUserId(Long userId) {
-        return paymentDao.findByUserId(userId).stream().map(this::toResponse).toList();
+    public Page<PaymentResponse> getPaymentsByUserId(Long userId, Pageable pageable) {
+        return paymentDao.findByUserId(userId, pageable).map(this::toResponse);
     }
 
     private PaymentResponse toResponse(PaymentEntity entity) {

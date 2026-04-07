@@ -2,9 +2,10 @@ package com.example.ebus.payment.controller;
 
 import com.example.ebus.payment.dto.PaymentResponse;
 import com.example.ebus.payment.service.PaymentQueryService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/payments")
@@ -27,7 +28,12 @@ public class PaymentController {
     }
 
     @GetMapping("/user/{userId}")
-    public List<PaymentResponse> getPaymentsByUserId(@PathVariable Long userId) {
-        return paymentQueryService.getPaymentsByUserId(userId);
+    public Page<PaymentResponse> getPaymentsByUserId(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return paymentQueryService.getPaymentsByUserId(
+                userId,
+                PageRequest.of(page, Math.min(size, 100), Sort.by("createdAt").descending()));
     }
 }

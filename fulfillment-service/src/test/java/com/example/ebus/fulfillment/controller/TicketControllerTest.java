@@ -10,12 +10,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -81,19 +85,21 @@ class TicketControllerTest {
                 1L, 100L, 200L, 300L, "TKT-ABC12345", "ISSUED",
                 LocalDateTime.now(), null);
 
-        when(ticketService.getTicketsByUser(200L)).thenReturn(List.of(response));
+        Page<TicketResponse> page = new PageImpl<>(List.of(response));
+        when(ticketService.getTicketsByUser(any(Long.class), any(PageRequest.class))).thenReturn(page);
 
-        List<TicketResponse> responses = ticketController.getTicketsByUser(200L);
+        Page<TicketResponse> responses = ticketController.getTicketsByUser(200L, 0, 20);
 
         assertThat(responses).hasSize(1);
-        assertThat(responses.get(0).userId()).isEqualTo(200);
+        assertThat(responses.getContent().get(0).userId()).isEqualTo(200);
     }
 
     @Test
     void getTicketsByUser_EmptyList() {
-        when(ticketService.getTicketsByUser(200L)).thenReturn(List.of());
+        Page<TicketResponse> page = new PageImpl<>(List.of());
+        when(ticketService.getTicketsByUser(any(Long.class), any(PageRequest.class))).thenReturn(page);
 
-        List<TicketResponse> responses = ticketController.getTicketsByUser(200L);
+        Page<TicketResponse> responses = ticketController.getTicketsByUser(200L, 0, 20);
 
         assertThat(responses).isEmpty();
     }
@@ -104,13 +110,14 @@ class TicketControllerTest {
                 1L, 200L, 100L, "TICKET_ISSUED", "EMAIL",
                 "john@example.com", "Your ticket has been issued", LocalDateTime.now());
 
-        when(notificationService.getNotificationsByUser(200L)).thenReturn(List.of(response));
+        Page<NotificationResponse> page = new PageImpl<>(List.of(response));
+        when(notificationService.getNotificationsByUser(any(Long.class), any(PageRequest.class))).thenReturn(page);
 
-        List<NotificationResponse> responses = ticketController.getNotificationsByUser(200L);
+        Page<NotificationResponse> responses = ticketController.getNotificationsByUser(200L, 0, 20);
 
         assertThat(responses).hasSize(1);
-        assertThat(responses.get(0).userId()).isEqualTo(200);
-        assertThat(responses.get(0).type()).isEqualTo("TICKET_ISSUED");
+        assertThat(responses.getContent().get(0).userId()).isEqualTo(200);
+        assertThat(responses.getContent().get(0).type()).isEqualTo("TICKET_ISSUED");
     }
 
     @Test
@@ -119,11 +126,12 @@ class TicketControllerTest {
                 1L, 200L, 100L, "TICKET_ISSUED", "EMAIL",
                 "john@example.com", "Your ticket has been issued", LocalDateTime.now());
 
-        when(notificationService.getNotificationsByBooking(100L)).thenReturn(List.of(response));
+        Page<NotificationResponse> page = new PageImpl<>(List.of(response));
+        when(notificationService.getNotificationsByBooking(any(Long.class), any(PageRequest.class))).thenReturn(page);
 
-        List<NotificationResponse> responses = ticketController.getNotificationsByBooking(100L);
+        Page<NotificationResponse> responses = ticketController.getNotificationsByBooking(100L, 0, 20);
 
         assertThat(responses).hasSize(1);
-        assertThat(responses.get(0).bookingId()).isEqualTo(100);
+        assertThat(responses.getContent().get(0).bookingId()).isEqualTo(100);
     }
 }

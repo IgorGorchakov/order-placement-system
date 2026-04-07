@@ -12,6 +12,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDateTime;
@@ -99,9 +101,9 @@ class UserManagementServiceImplTest {
 
     @Test
     void getAllUsers_Success() {
-        when(userDao.findAll()).thenReturn(List.of(sampleUser));
+        when(userDao.findAll(any(PageRequest.class))).thenReturn(new PageImpl<>(List.of(sampleUser)));
 
-        List<UserResponse> responses = userManagementService.getAllUsers();
+        List<UserResponse> responses = userManagementService.getAllUsers(100);
 
         assertThat(responses).hasSize(1);
         assertThat(responses.get(0).getEmail()).isEqualTo("test@example.com");
@@ -109,9 +111,9 @@ class UserManagementServiceImplTest {
 
     @Test
     void getAllUsers_EmptyList() {
-        when(userDao.findAll()).thenReturn(List.of());
+        when(userDao.findAll(any(PageRequest.class))).thenReturn(new PageImpl<>(List.of()));
 
-        List<UserResponse> responses = userManagementService.getAllUsers();
+        List<UserResponse> responses = userManagementService.getAllUsers(100);
 
         assertThat(responses).isEmpty();
     }
