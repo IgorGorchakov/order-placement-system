@@ -27,6 +27,12 @@ app:
 server:
   port: 8085
 
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] [%X{correlationId}] %-5level %logger{36} - %msg%n"
+  level:
+    root: INFO
+
 ---
 spring:
   config:
