@@ -3,6 +3,7 @@ package com.example.ebus.search.controller;
 import com.example.ebus.search.dto.TripSearchRequest;
 import com.example.ebus.search.dto.TripSearchResponse;
 import com.example.ebus.search.service.TripQueryService;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,7 +24,7 @@ public class SearchController {
 
     @GetMapping("/trips")
     public Page<TripSearchResponse> searchTrips(
-            TripSearchRequest request,
+            @Valid TripSearchRequest request,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") @Max(100) int size) {
         return tripQueryService.searchTrips(
