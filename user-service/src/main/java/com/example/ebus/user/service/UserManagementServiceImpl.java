@@ -7,7 +7,6 @@ import com.example.ebus.user.entity.UserEntity;
 import com.example.ebus.user.exception.EmailAlreadyExistsException;
 import com.example.ebus.user.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserManagementServiceImpl implements UserManagementService {
 
     private final UserDao userDao;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final PasswordEncoderStrategy passwordEncoder;
 
     @Override
     @Transactional

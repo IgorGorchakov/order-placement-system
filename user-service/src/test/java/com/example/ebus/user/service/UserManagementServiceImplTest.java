@@ -12,7 +12,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -20,9 +19,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserManagementServiceImplTest {
@@ -30,19 +27,20 @@ class UserManagementServiceImplTest {
     @Mock
     private UserDao userDao;
 
+    @Mock
+    private PasswordEncoderStrategy passwordEncoder;
+
     @InjectMocks
     private UserManagementServiceImpl userManagementService;
 
     private UserEntity sampleUser;
-    private BCryptPasswordEncoder passwordEncoder;
 
     @BeforeEach
     void setUp() {
-        passwordEncoder = new BCryptPasswordEncoder();
         sampleUser = UserEntity.builder()
                 .id(1L)
                 .email("test@example.com")
-                .passwordHash(passwordEncoder.encode("password123"))
+                .passwordHash("encoded_password")
                 .firstName("John")
                 .lastName("Doe")
                 .phone("1234567890")
@@ -68,6 +66,7 @@ class UserManagementServiceImplTest {
                 .lastName("Smith")
                 .build();
 
+        when(passwordEncoder.encode("newpass123")).thenReturn("encoded_password");
         when(userDao.existsByEmail("newuser@example.com")).thenReturn(false);
         when(userDao.save(any(UserEntity.class))).thenReturn(newUser);
 
@@ -77,6 +76,7 @@ class UserManagementServiceImplTest {
         assertThat(response.getEmail()).isEqualTo("newuser@example.com");
         assertThat(response.getFirstName()).isEqualTo("Jane");
         verify(userDao).save(any(UserEntity.class));
+        verify(passwordEncoder).encode("newpass123");
     }
 
     @Test

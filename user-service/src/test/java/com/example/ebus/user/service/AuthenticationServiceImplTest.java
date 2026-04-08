@@ -11,14 +11,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AuthenticationServiceImplTest {
@@ -26,19 +25,20 @@ class AuthenticationServiceImplTest {
     @Mock
     private UserDao userDao;
 
+    @Mock
+    private PasswordEncoderStrategy passwordEncoder;
+
     @InjectMocks
     private AuthenticationServiceImpl authenticationService;
 
     private UserEntity sampleUser;
-    private BCryptPasswordEncoder passwordEncoder;
 
     @BeforeEach
     void setUp() {
-        passwordEncoder = new BCryptPasswordEncoder();
         sampleUser = UserEntity.builder()
                 .id(1L)
                 .email("test@example.com")
-                .passwordHash(passwordEncoder.encode("password123"))
+                .passwordHash("encoded_password")
                 .firstName("John")
                 .lastName("Doe")
                 .phone("1234567890")
@@ -54,12 +54,14 @@ class AuthenticationServiceImplTest {
         );
 
         when(userDao.findByEmail("test@example.com")).thenReturn(Optional.of(sampleUser));
+        when(passwordEncoder.matches("password123", sampleUser.getPasswordHash())).thenReturn(true);
 
         UserResponse response = authenticationService.authenticate(request);
 
         assertThat(response).isNotNull();
         assertThat(response.getEmail()).isEqualTo("test@example.com");
         assertThat(response.getFirstName()).isEqualTo("John");
+        verify(passwordEncoder).matches("password123", sampleUser.getPasswordHash());
     }
 
     @Test
@@ -83,8 +85,10 @@ class AuthenticationServiceImplTest {
         );
 
         when(userDao.findByEmail("test@example.com")).thenReturn(Optional.of(sampleUser));
+        when(passwordEncoder.matches("wrongpassword", sampleUser.getPasswordHash())).thenReturn(false);
 
         assertThatThrownBy(() -> authenticationService.authenticate(request))
                 .isInstanceOf(AuthenticationException.class);
+        verify(passwordEncoder).matches("wrongpassword", sampleUser.getPasswordHash());
     }
 }

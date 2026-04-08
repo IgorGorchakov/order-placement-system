@@ -1,112 +1,73 @@
 package com.example.ebus.booking.service;
 
-import com.example.ebus.booking.exception.SeatNotAvailableException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.data.redis.core.script.DefaultRedisScript;
 
-import java.util.Arrays;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SeatLockServiceTest {
 
     @Mock
-    private StringRedisTemplate redisTemplate;
+    private SeatLockStrategy delegate;
 
-    @Mock
-    private ValueOperations<String, String> valueOps;
-
+    @InjectMocks
     private SeatLockService seatLockService;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        lenient().when(redisTemplate.opsForValue()).thenReturn(valueOps);
-        seatLockService = new SeatLockService(redisTemplate);
-        seatLockService.init();
+    @Test
+    void lockSeats_shouldDelegateToStrategy() {
+        // Given
+        Long tripId = 1L;
+        List<String> seatNumbers = List.of("A1", "A2");
+
+        // When
+        seatLockService.lockSeats(tripId, seatNumbers);
+
+        // Then
+        verify(delegate).lockSeats(tripId, seatNumbers);
     }
 
     @Test
-    void lockSeats_Success() {
-        when(redisTemplate.execute(any(DefaultRedisScript.class), any(List.class), any(String.class), any(String.class), any(String.class)))
-                .thenReturn(2L);
+    void releaseSeats_shouldDelegateToStrategy() {
+        // Given
+        Long tripId = 1L;
+        List<String> seatNumbers = List.of("A1", "A2");
 
-        seatLockService.lockSeats(1L, Arrays.asList("1A", "1B"));
+        // When
+        seatLockService.releaseSeats(tripId, seatNumbers);
 
-        verify(redisTemplate).execute(any(DefaultRedisScript.class), any(List.class), any(String.class), any(String.class), any(String.class));
+        // Then
+        verify(delegate).releaseSeats(tripId, seatNumbers);
     }
 
     @Test
-    void lockSeats_SeatAlreadyLocked() {
-        when(redisTemplate.execute(any(DefaultRedisScript.class), any(List.class), any(String.class), any(String.class), any(String.class)))
-                .thenReturn(-2L);
+    void isSeatLocked_shouldDelegateToStrategy() {
+        // Given
+        Long tripId = 1L;
+        String seatNumber = "A1";
 
-        assertThatThrownBy(() -> seatLockService.lockSeats(1L, Arrays.asList("1A", "1B")))
-                .isInstanceOf(SeatNotAvailableException.class)
-                .hasMessageContaining("1B");
+        // When
+        seatLockService.isSeatLocked(tripId, seatNumber);
 
-        verify(redisTemplate).execute(any(DefaultRedisScript.class), any(List.class), any(String.class), any(String.class), any(String.class));
+        // Then
+        verify(delegate).isSeatLocked(tripId, seatNumber);
     }
 
     @Test
-    void lockSeats_NotEnoughSeats() {
-        when(redisTemplate.execute(any(DefaultRedisScript.class), any(List.class), any(String.class), any(String.class), any(String.class)))
-                .thenReturn(-999L);
+    void initAvailability_shouldDelegateToStrategy() {
+        // Given
+        Long tripId = 1L;
+        int totalSeats = 50;
 
-        assertThatThrownBy(() -> seatLockService.lockSeats(1L, Arrays.asList("1A", "1B", "1C")))
-                .isInstanceOf(SeatNotAvailableException.class)
-                .hasMessageContaining("Not enough seats available");
+        // When
+        seatLockService.initAvailability(tripId, totalSeats);
 
-        verify(redisTemplate).execute(any(DefaultRedisScript.class), any(List.class), any(String.class), any(String.class), any(String.class));
-    }
-
-    @Test
-    void releaseSeats_Success() {
-        when(redisTemplate.execute(any(DefaultRedisScript.class), any(List.class), any(String.class)))
-                .thenReturn(5L);
-
-        seatLockService.releaseSeats(1L, Arrays.asList("1A", "1B"));
-
-        verify(redisTemplate).execute(any(DefaultRedisScript.class), any(List.class), any(String.class));
-    }
-
-    @Test
-    void isSeatLocked_SeatIsLocked() {
-        when(redisTemplate.hasKey("seat-lock:1:1A")).thenReturn(true);
-
-        boolean result = seatLockService.isSeatLocked(1L, "1A");
-
-        assertThat(result).isTrue();
-    }
-
-    @Test
-    void isSeatLocked_SeatNotLocked() {
-        when(redisTemplate.hasKey("seat-lock:1:1A")).thenReturn(false);
-
-        boolean result = seatLockService.isSeatLocked(1L, "1A");
-
-        assertThat(result).isFalse();
-    }
-
-    @Test
-    void initAvailability_Success() {
-        seatLockService.initAvailability(1L, 40);
-
-        verify(redisTemplate.opsForValue()).set("trip-availability:1", "40");
+        // Then
+        verify(delegate).initAvailability(tripId, totalSeats);
     }
 }

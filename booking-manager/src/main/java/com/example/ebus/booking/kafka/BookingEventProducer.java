@@ -3,9 +3,9 @@ package com.example.ebus.booking.kafka;
 import com.example.ebus.booking.dao.OutboxEventDao;
 import com.example.ebus.booking.entity.OutboxEventEntity;
 import com.example.ebus.booking.entity.OutboxEventStatus;
+import com.example.ebus.booking.service.OutboxEventPublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
-public class BookingEventProducer {
+public class BookingEventProducer implements OutboxEventPublisher {
 
     private static final int MAX_RETRIES = 5;
     private static final long BASE_DELAY_SECONDS = 10;
@@ -29,7 +29,7 @@ public class BookingEventProducer {
         this.outboxEventDao = outboxEventDao;
     }
 
-    @Scheduled(fixedDelay = 1000, initialDelay = 1000)
+    @Override
     public void publishOutboxEvents() {
         LocalDateTime cutoff = calculateCutoffTime();
         List<OutboxEventEntity> events = outboxEventDao.findReadyForPublish(OutboxEventStatus.PENDING, MAX_RETRIES, cutoff);

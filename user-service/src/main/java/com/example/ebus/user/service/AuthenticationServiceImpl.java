@@ -6,7 +6,6 @@ import com.example.ebus.user.dto.UserResponse;
 import com.example.ebus.user.entity.UserEntity;
 import com.example.ebus.user.exception.AuthenticationException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -14,7 +13,7 @@ import org.springframework.stereotype.Service;
 public class AuthenticationServiceImpl implements AuthenticationService {
 
     private final UserDao userDao;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final PasswordEncoderStrategy passwordEncoder;
 
     @Override
     public UserResponse authenticate(LoginRequest request) {
