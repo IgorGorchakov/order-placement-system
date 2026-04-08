@@ -42,8 +42,23 @@ public class TripQueryServiceImpl implements TripQueryService {
             bool.must(Query.of(q -> q.match(m -> m.field("operatorName").query(request.operator()))));
         }
         if (request.amenities() != null && !request.amenities().isEmpty()) {
-            for (String amenity : request.amenities()) {
-                bool.must(Query.of(q -> q.term(t -> t.field("amenities").value(amenity))));
+            TripSearchRequest.AmenityMatchStrategy strategy = 
+                request.amenityMatch() != null ? request.amenityMatch() : TripSearchRequest.AmenityMatchStrategy.ANY;
+            
+            if (strategy == TripSearchRequest.AmenityMatchStrategy.ALL) {
+                // AND logic: match trips with ALL specified amenities
+                for (String amenity : request.amenities()) {
+                    bool.must(Query.of(q -> q.term(t -> t.field("amenities").value(amenity))));
+                }
+            } else {
+                // OR logic (default): match trips with ANY of the selected amenities
+                final List<String> amenities = request.amenities();
+                bool.must(Query.of(q -> q.bool(b -> {
+                    amenities.forEach(amenity ->
+                        b.should(s -> s.term(t -> t.field("amenities").value(amenity)))
+                    );
+                    return b.minimumShouldMatch("1");
+                })));
             }
         }
         if (request.minPrice() != null || request.maxPrice() != null) {

@@ -42,6 +42,7 @@ class SearchControllerTest {
                 null,
                 null,
                 null,
+                null,
                 null
         );
 

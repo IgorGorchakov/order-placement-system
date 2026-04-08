@@ -73,6 +73,7 @@ class TripQueryServiceImplTest {
                 null,
                 null,
                 null,
+                null,
                 null
         );
     }
@@ -172,5 +173,98 @@ class TripQueryServiceImplTest {
         List<String> suggestions = tripQueryService.autocomplete("XYZ");
 
         assertThat(suggestions).isEmpty();
+    }
+
+    @Test
+    void searchTrips_WithAmenitiesOrLogic_Default() {
+        TripSearchRequest requestWithAmenities = new TripSearchRequest(
+                "NYC",
+                "Boston",
+                LocalDate.of(2026, 4, 10),
+                null,
+                null,
+                List.of("WiFi", "AC"),
+                null,
+                null,
+                null,
+                null // null defaults to ANY (OR logic)
+        );
+
+        SearchHit<TripDocument> hit = mock(SearchHit.class);
+        when(hit.getContent()).thenReturn(sampleTrip);
+
+        SearchHits<TripDocument> searchHits = mock(SearchHits.class);
+        when(searchHits.getSearchHits()).thenReturn(List.of(hit));
+        when(searchHits.getTotalHits()).thenReturn(1L);
+
+        when(elasticsearchOperations.search(any(NativeQuery.class), eq(TripDocument.class)))
+                .thenReturn(searchHits);
+
+        Page<TripSearchResponse> responses = tripQueryService.searchTrips(requestWithAmenities, PageRequest.of(0, 20));
+
+        assertThat(responses).hasSize(1);
+        verify(elasticsearchOperations).search(any(NativeQuery.class), eq(TripDocument.class));
+    }
+
+    @Test
+    void searchTrips_WithAmenitiesOrLogic_Explicit() {
+        TripSearchRequest requestWithAmenities = new TripSearchRequest(
+                "NYC",
+                "Boston",
+                LocalDate.of(2026, 4, 10),
+                null,
+                null,
+                List.of("WiFi", "AC"),
+                null,
+                null,
+                null,
+                TripSearchRequest.AmenityMatchStrategy.ANY
+        );
+
+        SearchHit<TripDocument> hit = mock(SearchHit.class);
+        when(hit.getContent()).thenReturn(sampleTrip);
+
+        SearchHits<TripDocument> searchHits = mock(SearchHits.class);
+        when(searchHits.getSearchHits()).thenReturn(List.of(hit));
+        when(searchHits.getTotalHits()).thenReturn(1L);
+
+        when(elasticsearchOperations.search(any(NativeQuery.class), eq(TripDocument.class)))
+                .thenReturn(searchHits);
+
+        Page<TripSearchResponse> responses = tripQueryService.searchTrips(requestWithAmenities, PageRequest.of(0, 20));
+
+        assertThat(responses).hasSize(1);
+        verify(elasticsearchOperations).search(any(NativeQuery.class), eq(TripDocument.class));
+    }
+
+    @Test
+    void searchTrips_WithAmenitiesAndLogic() {
+        TripSearchRequest requestWithAmenities = new TripSearchRequest(
+                "NYC",
+                "Boston",
+                LocalDate.of(2026, 4, 10),
+                null,
+                null,
+                List.of("WiFi", "AC"),
+                null,
+                null,
+                null,
+                TripSearchRequest.AmenityMatchStrategy.ALL
+        );
+
+        SearchHit<TripDocument> hit = mock(SearchHit.class);
+        when(hit.getContent()).thenReturn(sampleTrip);
+
+        SearchHits<TripDocument> searchHits = mock(SearchHits.class);
+        when(searchHits.getSearchHits()).thenReturn(List.of(hit));
+        when(searchHits.getTotalHits()).thenReturn(1L);
+
+        when(elasticsearchOperations.search(any(NativeQuery.class), eq(TripDocument.class)))
+                .thenReturn(searchHits);
+
+        Page<TripSearchResponse> responses = tripQueryService.searchTrips(requestWithAmenities, PageRequest.of(0, 20));
+
+        assertThat(responses).hasSize(1);
+        verify(elasticsearchOperations).search(any(NativeQuery.class), eq(TripDocument.class));
     }
 }

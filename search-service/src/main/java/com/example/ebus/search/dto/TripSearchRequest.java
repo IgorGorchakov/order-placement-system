@@ -14,5 +14,11 @@ public record TripSearchRequest(
     List<String> amenities,
     String operator,
     LocalTime departureAfter,
-    LocalTime departureBefore
-) {}
+    LocalTime departureBefore,
+    AmenityMatchStrategy amenityMatch
+) {
+    public enum AmenityMatchStrategy {
+        ANY,  // OR — match trips with any selected amenity
+        ALL   // AND — match trips with all selected amenities
+    }
+}
