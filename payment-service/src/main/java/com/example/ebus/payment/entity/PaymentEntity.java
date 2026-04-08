@@ -1,11 +1,20 @@
 package com.example.ebus.payment.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "payments")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class PaymentEntity {
 
     @Id
@@ -51,25 +60,4 @@ public class PaymentEntity {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public Long getBookingId() { return bookingId; }
-    public void setBookingId(Long bookingId) { this.bookingId = bookingId; }
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
-    public BigDecimal getAmount() { return amount; }
-    public void setAmount(BigDecimal amount) { this.amount = amount; }
-    public String getCurrency() { return currency; }
-    public void setCurrency(String currency) { this.currency = currency; }
-    public String getPaymentMethodType() { return paymentMethodType; }
-    public void setPaymentMethodType(String paymentMethodType) { this.paymentMethodType = paymentMethodType; }
-    public String getProvider() { return provider; }
-    public void setProvider(String provider) { this.provider = provider; }
-    public PaymentStatus getStatus() { return status; }
-    public void setStatus(PaymentStatus status) { this.status = status; }
-    public String getFailureReason() { return failureReason; }
-    public void setFailureReason(String failureReason) { this.failureReason = failureReason; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
 }

@@ -1,10 +1,19 @@
 package com.example.ebus.payment.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "outbox_events")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class OutboxEventEntity {
 
     @Id
@@ -23,6 +32,15 @@ public class OutboxEventEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String payload;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OutboxEventStatus status = OutboxEventStatus.PENDING;
+
+    @Column(nullable = false)
+    private int retryCount = 0;
+
+    private LocalDateTime lastAttemptAt;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -32,18 +50,4 @@ public class OutboxEventEntity {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
     }
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getAggregateType() { return aggregateType; }
-    public void setAggregateType(String aggregateType) { this.aggregateType = aggregateType; }
-    public String getAggregateId() { return aggregateId; }
-    public void setAggregateId(String aggregateId) { this.aggregateId = aggregateId; }
-    public String getEventType() { return eventType; }
-    public void setEventType(String eventType) { this.eventType = eventType; }
-    public String getPayload() { return payload; }
-    public void setPayload(String payload) { this.payload = payload; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getProcessedAt() { return processedAt; }
-    public void setProcessedAt(LocalDateTime processedAt) { this.processedAt = processedAt; }
 }
