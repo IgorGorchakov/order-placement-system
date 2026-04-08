@@ -80,6 +80,7 @@ class PaymentMethodServiceImplTest {
         assertThat(response).isNotNull();
         assertThat(response.getType()).isEqualTo(PaymentMethodType.CARD);
         assertThat(response.getProvider()).isEqualTo("Stripe");
+        assertThat(response.getToken()).isEqualTo("****_123");
         verify(paymentMethodDao).save(any(PaymentMethodEntity.class));
     }
 
@@ -117,6 +118,7 @@ class PaymentMethodServiceImplTest {
 
         assertThat(responses).hasSize(1);
         assertThat(responses.get(0).getType()).isEqualTo(PaymentMethodType.CARD);
+        assertThat(responses.get(0).getToken()).isEqualTo("****_123");
     }
 
     @Test

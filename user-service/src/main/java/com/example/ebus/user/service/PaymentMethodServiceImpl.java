@@ -47,12 +47,24 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
     }
 
     private PaymentMethodResponse toPaymentResponse(PaymentMethodEntity pm) {
+        String maskedToken = maskToken(pm.getToken());
+
         return PaymentMethodResponse.builder()
                 .id(pm.getId())
                 .type(pm.getType())
                 .provider(pm.getProvider())
-                .token(pm.getToken())
+                .token(maskedToken)
                 .defaultMethod(pm.isDefaultMethod())
                 .build();
+    }
+
+    private String maskToken(String token) {
+        if (token == null || token.isBlank()) {
+            return "****";
+        }
+        if (token.length() > 4) {
+            return "****" + token.substring(token.length() - 4);
+        }
+        return "****";
     }
 }
