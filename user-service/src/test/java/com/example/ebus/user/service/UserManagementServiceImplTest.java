@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -67,7 +68,6 @@ class UserManagementServiceImplTest {
                 .build();
 
         when(passwordEncoder.encode("newpass123")).thenReturn("encoded_password");
-        when(userDao.existsByEmail("newuser@example.com")).thenReturn(false);
         when(userDao.save(any(UserEntity.class))).thenReturn(newUser);
 
         UserResponse response = userManagementService.createUser(request);
@@ -84,18 +84,19 @@ class UserManagementServiceImplTest {
         CreateUserRequest request = new CreateUserRequest(
                 "existing@example.com",
                 "password123",
-                null,
-                null,
+                "John",
+                "Doe",
                 null
         );
 
-        when(userDao.existsByEmail("existing@example.com")).thenReturn(true);
+        when(passwordEncoder.encode("password123")).thenReturn("encoded_password");
+        when(userDao.save(any(UserEntity.class))).thenThrow(new DataIntegrityViolationException("Unique constraint violation: email"));
 
         assertThatThrownBy(() -> userManagementService.createUser(request))
                 .isInstanceOf(EmailAlreadyExistsException.class)
                 .hasMessageContaining("existing@example.com");
 
-        verify(userDao, never()).save(any());
+        verify(userDao).save(any(UserEntity.class));
     }
 
     @Test

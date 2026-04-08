@@ -7,6 +7,7 @@ import com.example.ebus.user.entity.UserEntity;
 import com.example.ebus.user.exception.EmailAlreadyExistsException;
 import com.example.ebus.user.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,10 +21,6 @@ public class UserManagementServiceImpl implements UserManagementService {
     @Override
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {
-        if (userDao.existsByEmail(request.email())) {
-            throw new EmailAlreadyExistsException(request.email());
-        }
-
         UserEntity user = UserEntity.builder()
                 .email(request.email())
                 .passwordHash(passwordEncoder.encode(request.password()))
@@ -32,7 +29,11 @@ public class UserManagementServiceImpl implements UserManagementService {
                 .phone(request.phone())
                 .build();
 
-        return toResponse(userDao.save(user));
+        try {
+            return toResponse(userDao.save(user));
+        } catch (DataIntegrityViolationException ex) {
+            throw new EmailAlreadyExistsException(request.email());
+        }
     }
 
     @Override
