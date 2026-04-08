@@ -56,25 +56,40 @@ public class TripQueryServiceImpl implements TripQueryService {
                 return range;
             })));
         }
+
+        // Merge all date/time bounds into a single range query
+        LocalDateTime departureTimeFrom = null;
+        LocalDateTime departureTimeTo = null;
+
         if (request.date() != null) {
-            LocalDateTime dayStart = request.date().atStartOfDay();
-            LocalDateTime dayEnd = request.date().atTime(LocalTime.MAX);
-            bool.must(Query.of(q -> q.range(r -> r.date(d -> d
-                    .field("departureTime")
-                    .gte(dayStart.toString())
-                    .lte(dayEnd.toString())))));
+            departureTimeFrom = request.date().atStartOfDay();
+            departureTimeTo = request.date().atTime(LocalTime.MAX);
         }
+
         if (request.departureAfter() != null && request.date() != null) {
             LocalDateTime after = request.date().atTime(request.departureAfter());
-            bool.must(Query.of(q -> q.range(r -> r.date(d -> d
-                    .field("departureTime")
-                    .gte(after.toString())))));
+            if (departureTimeFrom == null || after.isAfter(departureTimeFrom)) {
+                departureTimeFrom = after;
+            }
         }
+
         if (request.departureBefore() != null && request.date() != null) {
             LocalDateTime before = request.date().atTime(request.departureBefore());
-            bool.must(Query.of(q -> q.range(r -> r.date(d -> d
-                    .field("departureTime")
-                    .lte(before.toString())))));
+            if (departureTimeTo == null || before.isBefore(departureTimeTo)) {
+                departureTimeTo = before;
+            }
+        }
+
+        if (departureTimeFrom != null || departureTimeTo != null) {
+            final LocalDateTime from = departureTimeFrom;
+            final LocalDateTime to = departureTimeTo;
+
+            bool.must(Query.of(q -> q.range(r -> r.date(d -> {
+                d.field("departureTime");
+                if (from != null) d.gte(from.toString());
+                if (to != null) d.lte(to.toString());
+                return d;
+            }))));
         }
 
         NativeQuery query = NativeQuery.builder()
