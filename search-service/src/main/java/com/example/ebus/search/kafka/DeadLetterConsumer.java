@@ -1,5 +1,6 @@
 package com.example.ebus.search.kafka;
 
+import com.example.ebus.events.Topics;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,9 +17,9 @@ public class DeadLetterConsumer {
     private static final Logger log = LoggerFactory.getLogger(DeadLetterConsumer.class);
 
     @KafkaListener(
-        topics = {"trip-created.DLT", "seat-availability-updated.DLT", "booking-cancelled.DLT"},
+        topics = {Topics.TRIP_CREATED + ".DLT", Topics.SEAT_AVAILABILITY_UPDATED + ".DLT", Topics.BOOKING_CANCELLED + ".DLT"},
         groupId = "search-service-dlt")
-    public void handleDeadLetter(ConsumerRecord<String, Object> record) {
+    public void handleDeadLetter(ConsumerRecord<String, String> record) {
         log.error("Message landed in DLT — manual intervention required. " +
             "Topic={}, Partition={}, Offset={}, Key={}, Value={}",
             record.topic(), record.partition(), record.offset(), record.key(), record.value());

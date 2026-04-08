@@ -9,4 +9,6 @@ public final class Topics {
     public static final String BOOKING_CANCELLED = "booking-cancelled";
     public static final String PAYMENT_COMPLETED = "payment-completed";
     public static final String PAYMENT_FAILED = "payment-failed";
+    public static final String TRIP_CREATED = "trip-created";
+    public static final String SEAT_AVAILABILITY_UPDATED = "seat-availability-updated";
 }
