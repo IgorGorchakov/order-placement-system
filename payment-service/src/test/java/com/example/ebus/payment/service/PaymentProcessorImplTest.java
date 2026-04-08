@@ -17,7 +17,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -61,6 +63,7 @@ class PaymentProcessorImplTest {
 
     @Test
     void processBookingCreated_Success() {
+        when(paymentDao.findByBookingId(1L)).thenReturn(Optional.empty());
         when(userServiceClient.getPaymentMethods(100L)).thenReturn(List.of(samplePaymentMethod));
         when(paymentDao.save(any(PaymentEntity.class))).thenReturn(samplePayment);
         doNothing().when(eventPublisher).publishPaymentCompletedEvent(anyLong(), any(PaymentCompletedEvent.class));
@@ -76,6 +79,7 @@ class PaymentProcessorImplTest {
 
     @Test
     void processBookingCreated_NoPaymentMethod() {
+        when(paymentDao.findByBookingId(1L)).thenReturn(Optional.empty());
         when(userServiceClient.getPaymentMethods(100L)).thenReturn(List.of());
         when(paymentDao.save(any(PaymentEntity.class))).thenReturn(samplePayment);
         doNothing().when(eventPublisher).publishPaymentFailedEvent(anyLong(), any(PaymentFailedEvent.class));
@@ -91,15 +95,24 @@ class PaymentProcessorImplTest {
 
     @Test
     void processBookingCreated_ExceptionHandling() {
+        when(paymentDao.findByBookingId(1L)).thenReturn(Optional.empty());
         when(userServiceClient.getPaymentMethods(100L)).thenThrow(new RuntimeException("Service unavailable"));
-        when(paymentDao.save(any(PaymentEntity.class))).thenReturn(samplePayment);
-        doNothing().when(eventPublisher).publishPaymentFailedEvent(anyLong(), any(PaymentFailedEvent.class));
+
+        assertThrows(RuntimeException.class, () ->
+            paymentProcessor.processBookingCreated(sampleEvent)
+        );
+
+        verify(paymentDao, never()).save(any());
+    }
+
+    @Test
+    void processBookingCreated_Idempotency_DuplicateEventSkipped() {
+        when(paymentDao.findByBookingId(1L)).thenReturn(Optional.of(samplePayment));
 
         paymentProcessor.processBookingCreated(sampleEvent);
 
-        verify(paymentDao).save(argThat(payment ->
-                payment.getStatus() == PaymentStatus.FAILED &&
-                payment.getPaymentMethodType().equals("UNKNOWN")
-        ));
+        verify(paymentDao, never()).save(any());
+        verify(userServiceClient, never()).getPaymentMethods(anyLong());
+        verifyNoInteractions(eventPublisher);
     }
 }

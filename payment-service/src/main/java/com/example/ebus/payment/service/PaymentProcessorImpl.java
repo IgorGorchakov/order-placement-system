@@ -10,6 +10,7 @@ import com.example.ebus.payment.entity.PaymentEntity;
 import com.example.ebus.payment.entity.PaymentStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,13 @@ public class PaymentProcessorImpl implements PaymentProcessor {
     @Override
     @Transactional
     public void processBookingCreated(BookingCreatedEvent event) {
+        // Idempotency guard: skip if payment already exists for this booking
+        if (paymentDao.findByBookingId(event.bookingId()).isPresent()) {
+            log.warn("Payment already exists for bookingId={}, skipping duplicate event",
+                event.bookingId());
+            return;
+        }
+
         try {
             List<UserPaymentMethod> methods = userServiceClient.getPaymentMethods(event.userId());
             UserPaymentMethod method = methods.stream()
@@ -65,9 +73,12 @@ public class PaymentProcessorImpl implements PaymentProcessor {
                         payment.getId(), event.bookingId(), "Payment declined by provider");
                 eventPublisher.publishPaymentFailedEvent(payment.getId(), failedEvent);
             }
+        } catch (DataIntegrityViolationException ex) {
+            // Another instance already created the payment (race condition)
+            log.warn("Duplicate payment for bookingId={}, ignoring", event.bookingId());
         } catch (Exception e) {
             log.error("Failed to process booking-created event for bookingId={}", event.bookingId(), e);
-            createFailedPayment(event, "UNKNOWN", "unknown", e.getMessage());
+            throw e;
         }
     }
 
@@ -78,6 +89,11 @@ public class PaymentProcessorImpl implements PaymentProcessor {
     }
 
     private void createFailedPayment(BookingCreatedEvent event, String methodType, String provider, String reason) {
+        if (paymentDao.findByBookingId(event.bookingId()).isPresent()) {
+            log.warn("Payment already exists for bookingId={}, skipping duplicate failed payment",
+                event.bookingId());
+            return;
+        }
         try {
             PaymentEntity payment = new PaymentEntity();
             payment.setBookingId(event.bookingId());
