@@ -235,6 +235,21 @@ Owns everything after payment succeeds.
 
 **Tech:** PostgreSQL, Kafka (consumer)
 
+### API Gateway Routes (Nginx — `:8080`)
+
+| Route Prefix | Service | Purpose |
+|:---|:---|:---|
+| `/api/auth` | 👤 User Service | Login, authentication |
+| `/api/users` | 👤 User Service | User CRUD, payment methods |
+| `/api/search` | 🔍 Search Service | Trip search, autocomplete |
+| `/api/bookings` | 📋 Booking Manager | Booking lifecycle |
+| `/api/trips` | 📋 Booking Manager | Trip management |
+| `/api/routes` | 📋 Booking Manager | Route management |
+| `/api/buses` | 📋 Booking Manager | Bus/fleet management |
+| `/api/payments` | 💳 Payment Service | Payment status, refunds |
+| `/api/tickets` | 🎫 Fulfillment Service | Ticket retrieval |
+| `/api/notifications` | 🎫 Fulfillment Service | Notification history |
+
 ### Kafka Topics
 
 | Topic | Producer | Consumers |
@@ -330,7 +345,7 @@ docker-compose down -v
 
 ### Integration Tests
 
-The project includes an end-to-end integration test (`HappyPathIT`) that runs against the live Docker Compose stack via the Nginx API gateway:
+The project includes an end-to-end integration test (`HappyPathIT`) that runs against the live Docker Compose stack via the Nginx API gateway. It verifies the complete happy path:
 
 1. 👤 Register a user with a payment method
 2. 🛣️ Create a route, bus, and trip
