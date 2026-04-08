@@ -1,7 +1,7 @@
 package com.example.ebus.payment.kafka;
 
 import com.example.ebus.events.Topics;
-import com.example.ebus.events.booking.*;
+import com.example.ebus.events.booking.BookingCreatedEvent;
 import com.example.ebus.payment.service.PaymentProcessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 
 @Service
@@ -39,7 +40,7 @@ public class BookingCommandServiceImpl implements BookingCommandService {
         booking.setTripId(request.tripId());
         booking.setStatus(BookingStatus.PENDING);
         booking.setSeatNumbers(String.join(",", request.seatNumbers()));
-        booking.setTotalPrice(trip.getPrice().multiply(java.math.BigDecimal.valueOf(request.seatNumbers().size())));
+        booking.setTotalPrice(trip.getPrice().multiply(BigDecimal.valueOf(request.seatNumbers().size())));
         booking.setCurrency(trip.getCurrency());
         booking = bookingDao.save(booking);
 

@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -125,7 +126,7 @@ public class TripQueryServiceImpl implements TripQueryService {
         return hits.getSearchHits().stream()
                 .flatMap(hit -> {
                     TripDocument doc = hit.getContent();
-                    return java.util.stream.Stream.of(doc.getOrigin(), doc.getDestination());
+                    return Stream.of(doc.getOrigin(), doc.getDestination());
                 })
                 .filter(name -> name.toLowerCase().startsWith(query.toLowerCase()))
                 .distinct()

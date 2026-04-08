@@ -1,6 +1,10 @@
 package com.example.ebus.booking.controller;
 
-import com.example.ebus.booking.dto.*;
+import com.example.ebus.booking.dto.CreateBusRequest;
+import com.example.ebus.booking.dto.CreateRouteRequest;
+import com.example.ebus.booking.dto.CreateTripRequest;
+import com.example.ebus.booking.dto.SeatAvailabilityResponse;
+import com.example.ebus.booking.dto.TripResponse;
 import com.example.ebus.booking.entity.BusEntity;
 import com.example.ebus.booking.entity.RouteEntity;
 import com.example.ebus.booking.exception.TripNotFoundException;
@@ -26,7 +30,8 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)

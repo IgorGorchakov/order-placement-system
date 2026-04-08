@@ -1,6 +1,10 @@
 package com.example.ebus.booking.controller;
 
-import com.example.ebus.booking.dto.*;
+import com.example.ebus.booking.dto.CreateBusRequest;
+import com.example.ebus.booking.dto.CreateRouteRequest;
+import com.example.ebus.booking.dto.CreateTripRequest;
+import com.example.ebus.booking.dto.SeatAvailabilityResponse;
+import com.example.ebus.booking.dto.TripResponse;
 import com.example.ebus.booking.entity.BusEntity;
 import com.example.ebus.booking.entity.RouteEntity;
 import com.example.ebus.booking.service.BusManagementService;
@@ -15,7 +19,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDate;
 
