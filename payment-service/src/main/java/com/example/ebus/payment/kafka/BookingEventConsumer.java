@@ -3,6 +3,7 @@ package com.example.ebus.payment.kafka;
 import com.example.ebus.events.Topics;
 import com.example.ebus.events.booking.*;
 import com.example.ebus.payment.service.PaymentProcessor;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,8 +29,12 @@ public class BookingEventConsumer {
             BookingCreatedEvent event = objectMapper.readValue(message, BookingCreatedEvent.class);
             log.info("Received booking-created event for bookingId={}", event.bookingId());
             paymentProcessor.processBookingCreated(event);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to deserialize booking-created event (poison pill): {}", message, e);
+            throw new RuntimeException("Deserialization failed for booking-created event", e);
         } catch (Exception e) {
             log.error("Failed to process booking-created event", e);
+            throw e;
         }
     }
 }

@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -54,8 +55,10 @@ class BookingEventConsumerTest {
         when(objectMapper.readValue(message, BookingCreatedEvent.class))
                 .thenThrow(new RuntimeException("Invalid JSON"));
 
-        // Should not throw exception - it's caught and logged
-        bookingEventConsumer.handleBookingCreated(message);
+        // Exception should propagate (not swallowed) so Kafka can retry/send to DLT
+        assertThrows(RuntimeException.class, () ->
+            bookingEventConsumer.handleBookingCreated(message)
+        );
 
         // Verify paymentProcessor was NOT called since parsing failed
         verify(paymentProcessor, never()).processBookingCreated(any(BookingCreatedEvent.class));

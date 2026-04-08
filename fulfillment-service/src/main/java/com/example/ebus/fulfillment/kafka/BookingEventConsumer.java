@@ -4,6 +4,7 @@ import com.example.ebus.events.Topics;
 import com.example.ebus.events.booking.BookingCancelledEvent;
 import com.example.ebus.events.booking.BookingConfirmedEvent;
 import com.example.ebus.fulfillment.service.TicketService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,8 +30,12 @@ public class BookingEventConsumer {
             BookingConfirmedEvent event = objectMapper.readValue(message, BookingConfirmedEvent.class);
             log.info("Received booking-confirmed for bookingId={}", event.bookingId());
             ticketService.issueTicket(event.bookingId(), event.userId(), event.tripId());
+        } catch (JsonProcessingException e) {
+            log.error("Failed to deserialize booking-confirmed event (poison pill): {}", message, e);
+            throw new RuntimeException("Deserialization failed for booking-confirmed event", e);
         } catch (Exception e) {
-            log.error("Failed to process booking-confirmed event", e);
+            log.error("Failed to process booking-confirmed event for message: {}", message, e);
+            throw e;
         }
     }
 
@@ -40,8 +45,12 @@ public class BookingEventConsumer {
             BookingCancelledEvent event = objectMapper.readValue(message, BookingCancelledEvent.class);
             log.info("Received booking-cancelled for bookingId={}", event.bookingId());
             ticketService.cancelTicket(event.bookingId(), event.userId());
+        } catch (JsonProcessingException e) {
+            log.error("Failed to deserialize booking-cancelled event (poison pill): {}", message, e);
+            throw new RuntimeException("Deserialization failed for booking-cancelled event", e);
         } catch (Exception e) {
-            log.error("Failed to process booking-cancelled event", e);
+            log.error("Failed to process booking-cancelled event for message: {}", message, e);
+            throw e;
         }
     }
 }
