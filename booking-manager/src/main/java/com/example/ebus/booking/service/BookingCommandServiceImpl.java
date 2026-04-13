@@ -24,6 +24,13 @@ public class BookingCommandServiceImpl implements BookingCommandService {
 
     private final BookingDao bookingDao;
     private final TripDao tripDao;
+
+    /**
+     * Service for managing distributed seat locks in Redis.
+     * Critical: The implementation of createBooking must explicitly release these locks
+     * in a catch block to prevent "distributed lock leaks" where seats remain
+     * unavailable if the database transaction or event publishing fails.
+     */
     private final SeatLockService seatLockService;
     private final BookingEventPublisher eventPublisher;
 
