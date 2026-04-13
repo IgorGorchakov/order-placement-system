@@ -35,21 +35,26 @@ public class BookingCommandServiceImpl implements BookingCommandService {
 
         seatLockService.lockSeats(request.tripId(), request.seatNumbers());
 
-        BookingEntity booking = new BookingEntity();
-        booking.setUserId(request.userId());
-        booking.setTripId(request.tripId());
-        booking.setStatus(BookingStatus.PENDING);
-        booking.setSeatNumbers(String.join(",", request.seatNumbers()));
-        booking.setTotalPrice(trip.getPrice().multiply(BigDecimal.valueOf(request.seatNumbers().size())));
-        booking.setCurrency(trip.getCurrency());
-        booking = bookingDao.save(booking);
+        try {
+            BookingEntity booking = new BookingEntity();
+            booking.setUserId(request.userId());
+            booking.setTripId(request.tripId());
+            booking.setStatus(BookingStatus.PENDING);
+            booking.setSeatNumbers(String.join(",", request.seatNumbers()));
+            booking.setTotalPrice(trip.getPrice().multiply(BigDecimal.valueOf(request.seatNumbers().size())));
+            booking.setCurrency(trip.getCurrency());
+            booking = bookingDao.save(booking);
 
-        BookingCreatedEvent event = new BookingCreatedEvent(
-                booking.getId(), booking.getUserId(), booking.getTripId(),
-                request.seatNumbers(), booking.getTotalPrice(), booking.getCurrency());
-        eventPublisher.publishBookingCreatedEvent(booking.getId(), event);
+            BookingCreatedEvent event = new BookingCreatedEvent(
+                    booking.getId(), booking.getUserId(), booking.getTripId(),
+                    request.seatNumbers(), booking.getTotalPrice(), booking.getCurrency());
+            eventPublisher.publishBookingCreatedEvent(booking.getId(), event);
 
-        return toResponse(booking);
+            return toResponse(booking);
+        } catch (Exception e) {
+            seatLockService.releaseSeats(request.tripId(), request.seatNumbers());
+            throw e;
+        }
     }
 
     @Override
