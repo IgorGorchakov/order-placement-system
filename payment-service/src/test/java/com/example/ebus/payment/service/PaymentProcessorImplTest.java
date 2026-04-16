@@ -22,6 +22,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
@@ -41,6 +42,9 @@ class PaymentProcessorImplTest {
 
     @Mock
     private PaymentEventPublisher eventPublisher;
+
+    @Mock
+    private DistributedLockService distributedLockService;
 
     @InjectMocks
     private PaymentProcessorImpl paymentProcessor;
@@ -71,6 +75,7 @@ class PaymentProcessorImplTest {
     @Test
     void processBookingCreated_Success() {
         when(paymentDao.findByBookingId(1L)).thenReturn(Optional.empty());
+        when(distributedLockService.tryAcquire("payment-lock:booking:1")).thenReturn("lock-owner-token");
         when(userServiceClient.getPaymentMethods(100L)).thenReturn(List.of(samplePaymentMethod));
         when(paymentDao.save(any(PaymentEntity.class))).thenReturn(samplePayment);
         doNothing().when(eventPublisher).publishPaymentCompletedEvent(anyLong(), any(PaymentCompletedEvent.class));
@@ -82,11 +87,13 @@ class PaymentProcessorImplTest {
                 payment.getBookingId().equals(1L)
         ));
         verify(eventPublisher).publishPaymentCompletedEvent(eq(1L), any(PaymentCompletedEvent.class));
+        verify(distributedLockService).release("payment-lock:booking:1", "lock-owner-token");
     }
 
     @Test
     void processBookingCreated_NoPaymentMethod() {
         when(paymentDao.findByBookingId(1L)).thenReturn(Optional.empty());
+        when(distributedLockService.tryAcquire("payment-lock:booking:1")).thenReturn("lock-owner-token");
         when(userServiceClient.getPaymentMethods(100L)).thenReturn(List.of());
         when(paymentDao.save(any(PaymentEntity.class))).thenReturn(samplePayment);
         doNothing().when(eventPublisher).publishPaymentFailedEvent(anyLong(), any(PaymentFailedEvent.class));
@@ -98,11 +105,13 @@ class PaymentProcessorImplTest {
                 payment.getFailureReason().equals("No payment method found for user")
         ));
         verify(eventPublisher).publishPaymentFailedEvent(anyLong(), any(PaymentFailedEvent.class));
+        verify(distributedLockService).release("payment-lock:booking:1", "lock-owner-token");
     }
 
     @Test
     void processBookingCreated_ExceptionHandling() {
         when(paymentDao.findByBookingId(1L)).thenReturn(Optional.empty());
+        when(distributedLockService.tryAcquire("payment-lock:booking:1")).thenReturn("lock-owner-token");
         when(userServiceClient.getPaymentMethods(100L)).thenThrow(new RuntimeException("Service unavailable"));
 
         assertThrows(RuntimeException.class, () ->
@@ -110,6 +119,7 @@ class PaymentProcessorImplTest {
         );
 
         verify(paymentDao, never()).save(any());
+        verify(distributedLockService).release("payment-lock:booking:1", "lock-owner-token");
     }
 
     @Test
@@ -121,5 +131,19 @@ class PaymentProcessorImplTest {
         verify(paymentDao, never()).save(any());
         verify(userServiceClient, never()).getPaymentMethods(anyLong());
         verifyNoInteractions(eventPublisher);
+        verifyNoInteractions(distributedLockService);
+    }
+
+    @Test
+    void processBookingCreated_LockNotAcquired_Skips() {
+        when(paymentDao.findByBookingId(1L)).thenReturn(Optional.empty());
+        when(distributedLockService.tryAcquire("payment-lock:booking:1")).thenReturn(null);
+
+        paymentProcessor.processBookingCreated(sampleEvent);
+
+        verify(paymentDao, never()).save(any());
+        verify(userServiceClient, never()).getPaymentMethods(anyLong());
+        verifyNoInteractions(eventPublisher);
+        verify(distributedLockService, never()).release(anyString(), anyString());
     }
 }

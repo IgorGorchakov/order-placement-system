@@ -15,8 +15,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
 
+/**
+ * Processes incoming {@link BookingCreatedEvent}s by charging the user's payment method
+ * and publishing the corresponding success or failure event via Kafka.
+ *
+ * <p>Duplicate-event safety is ensured through three layers:
+ * <ol>
+ *   <li>A <b>Redis distributed lock</b> ({@link DistributedLockService}) keyed per booking,
+ *       which prevents concurrent processing of the same booking across multiple service instances.</li>
+ *   <li>A double-checked <b>idempotency query</b> before and after the lock is acquired.</li>
+ *   <li>A database <b>unique constraint</b> on {@code booking_id} as a last-resort guard.</li>
+ * </ol>
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -25,22 +36,29 @@ public class PaymentProcessorImpl implements PaymentProcessor {
     private final PaymentDao paymentDao;
     private final UserServiceClient userServiceClient;
     private final PaymentEventPublisher eventPublisher;
-    
-    // Lock to prevent race conditions during payment creation
-    private final ReentrantLock paymentLock = new ReentrantLock();
+    private final DistributedLockService distributedLockService;
+
+    private static final String PAYMENT_LOCK_PREFIX = "payment-lock:booking:";
 
     @Override
     @Transactional
     public void processBookingCreated(BookingCreatedEvent event) {
-        // First check if payment already exists (idempotency)
+        // First check if payment already exists (idempotency, no lock needed)
         if (paymentDao.findByBookingId(event.bookingId()).isPresent()) {
             log.warn("Payment already exists for bookingId={}, skipping duplicate event",
                 event.bookingId());
             return;
         }
 
-        // Acquire lock to prevent race conditions
-        paymentLock.lock();
+        // Acquire distributed lock to prevent race conditions across instances
+        String lockKey = PAYMENT_LOCK_PREFIX + event.bookingId();
+        String lockValue = distributedLockService.tryAcquire(lockKey);
+        if (lockValue == null) {
+            log.warn("Could not acquire distributed lock for bookingId={}, another instance is processing",
+                event.bookingId());
+            return;
+        }
+
         try {
             // Double-check idempotency after acquiring lock
             if (paymentDao.findByBookingId(event.bookingId()).isPresent()) {
@@ -95,7 +113,7 @@ public class PaymentProcessorImpl implements PaymentProcessor {
                 throw e;
             }
         } finally {
-            paymentLock.unlock();
+            distributedLockService.release(lockKey, lockValue);
         }
     }
 
@@ -106,25 +124,18 @@ public class PaymentProcessorImpl implements PaymentProcessor {
     }
 
     private void createFailedPayment(BookingCreatedEvent event, String methodType, String provider, String reason) {
-        // Acquire lock to prevent race conditions during failed payment creation
-        paymentLock.lock();
+        // Lock already held by caller — no need to re-acquire
+        PaymentEntity payment = new PaymentEntity();
+        payment.setBookingId(event.bookingId());
+        payment.setUserId(event.userId());
+        payment.setAmount(event.totalPrice());
+        payment.setCurrency(event.currency());
+        payment.setPaymentMethodType(methodType);
+        payment.setProvider(provider);
+        payment.setStatus(PaymentStatus.FAILED);
+        payment.setFailureReason(reason);
+
         try {
-            // Double-check idempotency after acquiring lock
-            if (paymentDao.findByBookingId(event.bookingId()).isPresent()) {
-                log.warn("Payment already exists for bookingId={}, skipping duplicate failed payment (after lock)",
-                    event.bookingId());
-                return;
-            }
-            
-            PaymentEntity payment = new PaymentEntity();
-            payment.setBookingId(event.bookingId());
-            payment.setUserId(event.userId());
-            payment.setAmount(event.totalPrice());
-            payment.setCurrency(event.currency());
-            payment.setPaymentMethodType(methodType);
-            payment.setProvider(provider);
-            payment.setStatus(PaymentStatus.FAILED);
-            payment.setFailureReason(reason);
             payment = paymentDao.save(payment);
 
             PaymentFailedEvent failedEvent = new PaymentFailedEvent(
@@ -132,8 +143,6 @@ public class PaymentProcessorImpl implements PaymentProcessor {
             eventPublisher.publishPaymentFailedEvent(payment.getId(), failedEvent);
         } catch (Exception e) {
             log.error("Failed to persist failed payment for bookingId={}", event.bookingId(), e);
-        } finally {
-            paymentLock.unlock();
         }
     }
 }
